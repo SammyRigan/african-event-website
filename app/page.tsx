@@ -61,7 +61,7 @@ export default function CreativeConnectAfricaLanding() {
             allow="autoplay; fullscreen; picture-in-picture"
             allowFullScreen
             className="w-full h-full object-cover absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 min-w-full min-h-full pointer-events-none"
-            title="Creative Connect Africa Background Video"
+            title="Creatives Connect Africa Background Video"
           ></iframe> */}
           <iframe 
             src="https://www.youtube.com/embed/sV1wHxxm9iQ?autoplay=1&amp;mute=1&amp;loop=1&amp;playlist=sV1wHxxm9iQ&amp;controls=0&amp;showinfo=0&amp;rel=0&amp;iv_load_policy=3&amp;modestbranding=1&amp;disablekb=1&amp;fs=0&amp;cc_load_policy=0&amp;playsinline=1&amp;enablejsapi=1"
@@ -69,7 +69,7 @@ export default function CreativeConnectAfricaLanding() {
             allow="autoplay; fullscreen; picture-in-picture"
             allowFullScreen
             className="w-full h-full object-cover absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 min-w-full min-h-full pointer-events-none"
-            title="Creative Connect Africa Background Video"
+            title="Creatives Connect Africa Background Video"
           ></iframe>
           <div className="absolute inset-0 bg-purple-900/50"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50"></div>
@@ -169,7 +169,7 @@ export default function CreativeConnectAfricaLanding() {
                 </h2>
                 <div className="space-y-6 text-lg leading-relaxed">
                   <p className="text-xl font-bold text-gray-200">
-                    Creative Connect Africa 2025 is the inaugural Festival & Forum designed to spotlight Africa's
+                    Creatives Connect Africa 2025 is the inaugural Festival & Forum designed to spotlight Africa's
                     creative industries as catalysts for trade and continental integration.
                   </p>
                   <p className="font-medium text-gray-300">
@@ -181,7 +181,7 @@ export default function CreativeConnectAfricaLanding() {
               <div className="relative">
                 <Image
                   src="/placeholder.svg?height=500&width=600"
-                  alt="Creative Connect Africa Event"
+                  alt="Creatives Connect Africa Event"
                   width={600}
                   height={500}
                   className="rounded-none shadow-2xl"
@@ -217,7 +217,7 @@ export default function CreativeConnectAfricaLanding() {
                 Celebrating Africa's Fashion, Film and Music
               </h2>
               <p className="text-lg leading-relaxed font-medium text-gray-600">
-              Creative Connect Africa is a premier platform celebrating African creativity across film, music, and fashion. It brings together industry leaders, artists, and innovators for showcases, workshops, and collaborations that shape Africa’s global cultural impact.
+              Creatives Connect Africa is a premier platform celebrating African creativity across film, music, and fashion. It brings together industry leaders, artists, and innovators for showcases, workshops, and collaborations that shape Africa’s global cultural impact.
                 </p>
           </div>
             {/* Image Grid */}
@@ -279,7 +279,7 @@ export default function CreativeConnectAfricaLanding() {
                 <div>
                 <h2 className="text-5xl lg:text-5xl font-black mb-6 leading-tight font-heading">Register your interest</h2>
                   <p className="text-lg text-gray-300 font-medium leading-relaxed">
-                    Creative Connect Africa is more than an event - it's a movement that celebrates the power of African creativity. Join us in this transformative experience where tradition meets innovation.
+                    Creatives Connect Africa is more than an event - it's a movement that celebrates the power of African creativity. Join us in this transformative experience where tradition meets innovation.
                   </p>
                 </div>
 
@@ -335,7 +335,7 @@ export default function CreativeConnectAfricaLanding() {
                 <div className="relative rounded-none overflow-hidden shadow-2xl">
                   <Image
                     src="https://au-afcfta.org/wp-content/uploads/2025/07/Gva0nk9WgAAF4of.jpeg"
-                    alt="Creative Connect Africa Event"
+                    alt="Creatives Connect Africa Event"
                     width={500}
                     height={600}
                     className="w-full h-auto object-cover rounded-none"
@@ -378,7 +378,7 @@ export default function CreativeConnectAfricaLanding() {
                 <p className="text-2xl">Film: Reshaping African Narratives</p>
                 </div>
                 <div className="w-2/5">
-                <p className="text-sm text-gray-400">Creative Connect Africa showcases African cinema through film screenings, masterclasses, and industry networking, empowering filmmakers to collaborate, share stories, and shape the future of the continent’s film industry.</p>
+                <p className="text-sm text-gray-400">Creatives Connect Africa showcases African cinema through film screenings, masterclasses, and industry networking, empowering filmmakers to collaborate, share stories, and shape the future of the continent’s film industry.</p>
                 </div>
               </div>
 
@@ -437,7 +437,7 @@ export default function CreativeConnectAfricaLanding() {
               FILM: <span className="text-red-400">RESHAPING AFRICAN NARRATIVES</span>
             </h2>
               <p className="text-lg leading-relaxed font-medium text-gray-300">
-                The African film industry is a powerhouse of storytelling. Creative Connect Africa provides a platform
+                The African film industry is a powerhouse of storytelling. Creatives Connect Africa provides a platform
                 for filmmakers to showcase their work, engage in co-production deals, and discuss the future of African
                 cinema.
               </p>
@@ -471,7 +471,7 @@ export default function CreativeConnectAfricaLanding() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6 order-2 lg:order-1">
               <p className="text-lg leading-relaxed font-medium text-gray-300">
-                African music has transcended borders, becoming a dominant force in global culture. Creative Connect
+                African music has transcended borders, becoming a dominant force in global culture. Creatives Connect
                 Africa celebrates this, bringing together artists, producers, and executives to explore the business of
                 music and cross-continental collaborations.
               </p>
@@ -542,7 +542,7 @@ export default function CreativeConnectAfricaLanding() {
             </div>
             <div className="space-y-6">
               <p className="text-lg leading-relaxed font-medium text-gray-300">
-                African fashion is a vibrant tapestry of tradition and innovation. Creative Connect Africa provides a
+                African fashion is a vibrant tapestry of tradition and innovation. Creatives Connect Africa provides a
                 platform for designers, models, and textile artists to showcase collections and forge partnerships.
               </p>
               <p className="text-lg leading-relaxed font-medium text-gray-300">
@@ -865,7 +865,7 @@ export default function CreativeConnectAfricaLanding() {
               <div className="flex items-center space-x-4">
                 <Image
                   src="/creatives-connect-africa-logo.png"
-                  alt="Creative Connect Africa Logo"
+                  alt="Creatives Connect Africa Logo"
                   width={180}
                   height={40}
                   className="rounded-none"
@@ -947,7 +947,7 @@ export default function CreativeConnectAfricaLanding() {
 
           <div className="border-t border-white/10 mt-12 pt-8 text-center">
             <p className="text-gray-400 font-medium">
-              &copy; 2025 Creative Connect Africa. A collaboration between AfCFTA Secretariat, Africa Tourism Partners,
+              &copy; 2025 Creatives Connect Africa. A collaboration between AfCFTA Secretariat, Africa Tourism Partners,
               and Black Star Experience.
             </p>
           </div>
