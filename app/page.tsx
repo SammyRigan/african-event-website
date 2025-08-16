@@ -1,11 +1,282 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Calendar, MapPin, Mail, Play, ArrowRight, Clock, ChevronDown } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { useState, useEffect } from "react"
 
 export default function CreativeConnectAfricaLanding() {
+  const [countdown, setCountdown] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
+
+  const [language, setLanguage] = useState<'en' | 'fr'>('en');
+
+  const translations = {
+    en: {
+      nav: {
+        about: "About Us",
+        register: "Register",
+        activities: "Activities",
+        media: "Media",
+        partners: "Partners",
+        contact: "Contact"
+      },
+      hero: {
+        title: "CREATIVES CONNECT AFRICA",
+        subtitle: "The AfCFA Forum & Festival on Tourism, Creatives & Cultural Industries",
+        registerNow: "Register Now",
+        date: "10 – 12 DECEMBER",
+        location: "ACCRA, GHANA"
+      },
+      countdown: {
+        title: "COUNTDOWN TO EVENT",
+        days: "DAYS",
+        hours: "HOURS",
+        minutes: "MINUTES",
+        seconds: "SECONDS",
+        dateLocation: "December 10-12, 2025 • Accra, Ghana"
+      },
+      about: {
+        title: "ABOUT THE EVENT",
+        description: "Creatives Connect Africa is the inaugural Festival & Forum designed to spotlight Africa's creative industries as catalysts for trade and continental integration. Hosted in Accra, Ghana from 10 – 12 December 2025, this groundbreaking event brings together, creatives investors, and industry leaders for dialogue, deal-making, and celebration."
+      },
+      activities: {
+        title: "ACTIVITIES",
+        subtitle: "Explore the three pillars of African creativity through immersive experiences",
+        fashion: {
+          title: "Fashion",
+          description: "Experience the vibrant world of African fashion through runway shows, designer showcases, and textile exhibitions that blend tradition with contemporary innovation.",
+          button: "Explore Fashion"
+        },
+        music: {
+          title: "Music",
+          description: "Immerse yourself in the global heartbeat of Africa through live performances, music workshops, and industry networking sessions.",
+          button: "Explore Music"
+        },
+        film: {
+          title: "Film",
+          description: "Discover African cinema through film screenings, masterclasses, and industry discussions that reshape global narratives.",
+          button: "Explore Film"
+        }
+      },
+      partners: {
+        title: "Our Partners",
+        subtitle: "Meet the organizations driving Africa's creative economy forward",
+        description: "Creatives Connect Africa brings together leading organizations from across the continent to drive innovation, cultural exchange, and economic growth through Africa's creative industries.",
+        becomePartner: "BECOME A PARTNER"
+      },
+      register: {
+        title: "Register Now",
+        description: "Creatives Connect Africa is more than an event - it's a movement that celebrates the power of African creativity. Join us in this transformative experience where tradition meets innovation.",
+        attendEvent: "Register to Attend Event",
+        exhibitor: "Register as Exhibitor"
+      },
+      contact: {
+        title: "Contact Us",
+        subtitle: "Get in touch with us for more information about Creatives Connect Africa",
+        email: {
+          title: "Email",
+          description: "For general inquiries and registration support"
+        },
+        phone: {
+          title: "Phone",
+          description: "Call us for immediate assistance"
+        }
+      },
+      pillars: {
+        title: "The 3 Pillars",
+        subtitle: "Celebrating Africa's Creative Excellence in Film, Music, and Fashion",
+        film: {
+          title: "Film: Reshaping African Narratives",
+          description: "Creatives Connect Africa showcases African cinema through film screenings, masterclasses, and industry networking, empowering filmmakers to collaborate, share stories, and shape the future of the continent's film industry."
+        },
+        fashion: {
+          title: "Fashion: Blending heritage with global trends",
+          description: "African fashion blends tradition and innovation, with designers, models, and textile artists showcasing collections, forging partnerships, and driving conversations on sustainability, ethical production, and market growth."
+        },
+        music: {
+          title: "Music: The global heartbeat of Africa",
+          description: "African music's global influence comes alive through electrifying performances, collaborative workshops, and industry networking, fostering cross-continental partnerships and innovation in the thriving music scene."
+        }
+      },
+      newsletter: {
+        title: "JOIN THE MOVEMENT",
+        subtitle: "Be part of Africa's most significant creative economy gathering. Get exclusive updates on speakers, programming, and opportunities.",
+        firstName: "First Name",
+        lastName: "Last Name",
+        email: "Email Address",
+        interest: "I'm interested as...",
+        options: {
+          professional: "Industry Professional",
+          policymaker: "Policymaker",
+          investor: "Investor",
+          creative: "Creative/Artist",
+          media: "Media",
+          partner: "Development Partner",
+          diaspora: "Diaspora Representative",
+          other: "Other"
+        },
+        button: "GET EXCLUSIVE UPDATES"
+      },
+      footer: {
+        description: "The inaugural Festival & Forum spotlighting Africa's creative industries as catalysts for continental integration under the AfCFTA.",
+        contact: "Contact:",
+        eventDetails: "EVENT DETAILS",
+        comingSoon: "Coming Soon"
+      },
+      imageGrid: {
+        title: "Celebrating Africa's Fashion, Film and Music",
+        description: "Creatives Connect Africa is a premier platform celebrating African creativity across film, music, and fashion. It brings together industry leaders, artists, and innovators for showcases, workshops, and collaborations that shape Africa's global cultural impact."
+      },
+    },
+    fr: {
+      nav: {
+        about: "À Propos",
+        register: "S'inscrire",
+        activities: "Activités",
+        media: "Médias",
+        partners: "Partenaires",
+        contact: "Contact"
+      },
+      hero: {
+        title: "CREATIVES CONNECT AFRICA",
+        subtitle: "Le Forum et Festival AfCFA sur le Tourisme, les Industries Créatives et Culturelles",
+        registerNow: "S'inscrire Maintenant",
+        date: "10 – 12 DÉCEMBRE",
+        location: "ACCRA, GHANA"
+      },
+      countdown: {
+        title: "COMPTE À REBOURS VERS L'ÉVÉNEMENT",
+        days: "JOURS",
+        hours: "HEURES",
+        minutes: "MINUTES",
+        seconds: "SECONDES",
+        dateLocation: "10-12 décembre 2025 • Accra, Ghana"
+      },
+      about: {
+        title: "À PROPOS DE L'ÉVÉNEMENT",
+        description: "Creatives Connect Africa est le Festival et Forum inaugural conçu pour mettre en lumière les industries créatives africaines comme catalyseurs du commerce et de l'intégration continentale. Organisé à Accra, Ghana du 10 au 12 décembre 2025, cet événement révolutionnaire réunit créateurs, investisseurs et leaders de l'industrie pour le dialogue, la conclusion d'accords et la célébration."
+      },
+      activities: {
+        title: "ACTIVITÉS",
+        subtitle: "Explorez les trois piliers de la créativité africaine à travers des expériences immersives",
+        fashion: {
+          title: "Mode",
+          description: "Découvrez le monde vibrant de la mode africaine à travers des défilés, des présentations de designers et des expositions textiles qui allient tradition et innovation contemporaine.",
+          button: "Explorer la Mode"
+        },
+        music: {
+          title: "Musique",
+          description: "Plongez-vous dans le rythme global de l'Afrique à travers des performances live, des ateliers musicaux et des sessions de réseautage industriel.",
+          button: "Explorer la Musique"
+        },
+        film: {
+          title: "Cinéma",
+          description: "Découvrez le cinéma africain à travers des projections de films, des masterclass et des discussions industrielles qui redéfinissent les récits mondiaux.",
+          button: "Explorer le Cinéma"
+        }
+      },
+      partners: {
+        title: "Nos Partenaires",
+        subtitle: "Découvrez les organisations qui font avancer l'économie créative africaine",
+        description: "Creatives Connect Africa réunit les principales organisations du continent pour stimuler l'innovation, les échanges culturels et la croissance économique à travers les industries créatives africaines.",
+        becomePartner: "DEVENIR PARTENAIRE"
+      },
+      register: {
+        title: "S'inscrire Maintenant",
+        description: "Creatives Connect Africa est plus qu'un événement - c'est un mouvement qui célèbre le pouvoir de la créativité africaine. Rejoignez-nous dans cette expérience transformative où tradition et innovation se rencontrent.",
+        attendEvent: "S'inscrire pour Participer",
+        exhibitor: "S'inscrire comme Exposant"
+      },
+      contact: {
+        title: "Contactez-nous",
+        subtitle: "Contactez-nous pour plus d'informations sur Creatives Connect Africa",
+        email: {
+          title: "Email",
+          description: "Pour les demandes générales et le support d'inscription"
+        },
+        phone: {
+          title: "Téléphone",
+          description: "Appelez-nous pour une assistance immédiate"
+        }
+      },
+      pillars: {
+        title: "Les 3 Piliers",
+        subtitle: "Célébrer l'Excellence Créative Africaine en Cinéma, Musique et Mode",
+        film: {
+          title: "Cinéma: Redéfinir les Récits Africains",
+          description: "Creatives Connect Africa présente le cinéma africain à travers des projections, des masterclass et du réseautage industriel, permettant aux cinéastes de collaborer, partager des histoires et façonner l'avenir de l'industrie cinématographique du continent."
+        },
+        fashion: {
+          title: "Mode: Allier patrimoine et tendances mondiales",
+          description: "La mode africaine allie tradition et innovation, avec des designers, mannequins et artistes textiles présentant des collections, forgeant des partenariats et animant des conversations sur la durabilité, la production éthique et la croissance du marché."
+        },
+        music: {
+          title: "Musique: Le rythme global de l'Afrique",
+          description: "L'influence mondiale de la musique africaine prend vie à travers des performances électrisantes, des ateliers collaboratifs et du réseautage industriel, favorisant les partenariats transcontinentaux et l'innovation dans la scène musicale florissante."
+        }
+      },
+      newsletter: {
+        title: "REJOIGNEZ LE MOUVEMENT",
+        subtitle: "Faites partie du rassemblement le plus important de l'économie créative africaine. Recevez des mises à jour exclusives sur les conférenciers, la programmation et les opportunités.",
+        firstName: "Prénom",
+        lastName: "Nom de famille",
+        email: "Adresse email",
+        interest: "Je suis intéressé en tant que...",
+        options: {
+          professional: "Professionnel de l'industrie",
+          policymaker: "Décideur politique",
+          investor: "Investisseur",
+          creative: "Créatif/Artiste",
+          media: "Médias",
+          partner: "Partenaire de développement",
+          diaspora: "Représentant de la diaspora",
+          other: "Autre"
+        },
+        button: "OBTENIR DES MISES À JOUR EXCLUSIVES"
+      },
+      footer: {
+        description: "Le Festival et Forum inaugural mettant en lumière les industries créatives africaines comme catalyseurs de l'intégration continentale sous l'AfCFTA.",
+        contact: "Contact :",
+        eventDetails: "DÉTAILS DE L'ÉVÉNEMENT",
+        comingSoon: "Bientôt Disponible"
+      },
+      imageGrid: {
+        title: "Célébrer la Mode, le Cinéma et la Musique Africains",
+        description: "Creatives Connect Africa est une plateforme de premier plan qui célèbre la créativité africaine à travers le cinéma, la musique et la mode. Elle réunit les leaders de l'industrie, les artistes et les innovateurs pour des présentations, des ateliers et des collaborations qui façonnent l'impact culturel global de l'Afrique."
+      },
+    }
+  };
+
+  const t = translations[language as keyof typeof translations];
+
+  useEffect(() => {
+    const eventDate = new Date('December 10, 2025 09:00:00').getTime();
+    
+    const timer = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = eventDate - now;
+      
+      if (distance > 0) {
+        setCountdown({
+          days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((distance % (1000 * 60)) / 1000)
+        });
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden scroll-smooth">
       {/* Header */}
@@ -24,25 +295,44 @@ export default function CreativeConnectAfricaLanding() {
             <div className="flex items-center space-x-6">
               <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
                 <Link href="#about" className="text-gray-300 hover:text-white transition-colors">
-                  About
+                  {t.nav.about}
+                </Link>
+                <Link href="#register" className="text-gray-300 hover:text-white transition-colors">
+                  {t.nav.register}
+                </Link>
+                <Link href="#act-grid" className="text-gray-300 hover:text-white transition-colors">
+                  {t.nav.activities}
+                </Link>
+                <Link href="#media" className="text-gray-300 hover:text-white transition-colors">
+                  {t.nav.media}
+                </Link>
+                <Link href="#partners" className="text-gray-300 hover:text-white transition-colors">
+                  {t.nav.partners}
                 </Link>
                 <Link href="#contact" className="text-gray-300 hover:text-white transition-colors">
-                  Register
-                </Link>
-                <Link href="#themes" className="text-gray-300 hover:text-white transition-colors">
-                  Pillars
+                  {t.nav.contact}
                 </Link>
               </nav>
             </div>
             <div className="flex items-center space-x-6">
               <div className="hidden md:flex items-center space-x-4 text-gray-300 text-sm">
-                {/* <span className="cursor-pointer hover:text-white transition-colors">EN</span>
+                <span 
+                  className={`cursor-pointer transition-colors ${language === 'en' ? 'text-white' : 'hover:text-white'}`}
+                  onClick={() => setLanguage('en')}
+                >
+                  EN
+                </span>
                 <span className="text-gray-500">|</span>
-                <span className="opacity-50 cursor-not-allowed">FR</span> */}
+                <span 
+                  className={`cursor-pointer transition-colors ${language === 'fr' ? 'text-white' : 'hover:text-white'}`}
+                  onClick={() => setLanguage('fr')}
+                >
+                  FR
+                </span>
               </div>
               <Button className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 font-semibold rounded-none">
-                <Link href="#contact">
-                  Get updates
+                <Link href="#register">
+                  {t.hero.registerNow}
                 </Link>
               </Button>
             </div>
@@ -84,14 +374,14 @@ export default function CreativeConnectAfricaLanding() {
               <div className="flex items-center gap-3 text-white">
                 {/* <Calendar className="w-6 h-6" /> */}
                 <div>
-                  <p className="text-xl font-bold font-heading">10 – 12 DECEMBER</p>
+                  <p className="text-xl font-bold font-heading">{t.hero.date}</p>
                 </div>
               </div>
               <div className="w-1 h-7 bg-white"></div>
               <div className="flex items-center gap-3 text-white">
                 {/* <MapPin className="w-6 h-6" /> */}
                 <div>
-                  <p className="text-xl font-bold font-heading">ACCRA, GHANA</p>
+                  <p className="text-xl font-bold font-heading">{t.hero.location}</p>
                 </div>
               </div>
             </div>
@@ -104,7 +394,7 @@ export default function CreativeConnectAfricaLanding() {
 
             {/* Subtitle */}
             <div className="mb-8">
-              <p className="text-xl lg:text-2xl font-bold text-gray-200 mb-4 font-heading max-w-2xl mx-auto">The AfCFA Forum & Festival on Tourism, Creatives & Cultural Industries</p>
+              <p className="text-xl lg:text-2xl font-bold text-gray-200 mb-4 font-heading max-w-2xl mx-auto">{t.hero.subtitle}</p>
             </div>
 
             {/* Social Media */}
@@ -152,20 +442,46 @@ export default function CreativeConnectAfricaLanding() {
         </div>
       </section>
 
+      {/* Countdown Section */}
+      <section className="py-16 bg-black text-white relative">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl lg:text-6xl font-black mb-4 leading-tight font-heading">{t.countdown.title}</h2>
+            <p className="text-xl text-gray-300 font-medium">{t.countdown.dateLocation}</p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+            {[
+              { label: t.countdown.days, value: countdown.days },
+              { label: t.countdown.hours, value: countdown.hours },
+              { label: t.countdown.minutes, value: countdown.minutes },
+              { label: t.countdown.seconds, value: countdown.seconds }
+            ].map((item, index) => (
+              <div key={index} className="text-center">
+                <div className=" border border-white/15 rounded-none p-6 mb-4">
+                  <div className="text-4xl lg:text-6xl font-black text-orange-400 mb-2">{item.value}</div>
+                  <div className="text-sm font-bold text-gray-300">{item.label}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* About Section with Images */}
       <section id="about" className="py-20 bg-black text-white relative">
         <div className="container mx-auto px-5">
           <div className="max-w-5xl mx-auto">
             {/* new section here */}
             <div className="text-center py-11">
-              <p className="font-medium text-4xl text-gray-300  text-gray-600">Creatives Connect Africa is the inaugural Festival & Forum designed to spotlight Africa's creative industries as catalysts for trade and continental integration. Hosted in <b className="text-white">Accra, Ghana</b> from <b className="text-white">10 – 12 December 2025</b>, this groundbreaking event brings together, creatives investors, and industry leaders for dialogue, deal-making, and celebration.</p>
+              <p className="font-medium text-4xl text-gray-300  text-gray-600">{t.about.description}</p>
             </div>
 
 
             <div className="grid lg:grid-cols-2 gap-16 items-center hidden">
               <div>
                 <h2 className="text-5xl lg:text-7xl font-black mb-8 leading-tight font-heading">
-                  ABOUT THE <span className="text-purple-600">EVENT</span>
+                  {t.activities.title}
                 </h2>
                 <div className="space-y-6 text-lg leading-relaxed">
                   <p className="text-xl font-bold text-gray-200">
@@ -210,15 +526,16 @@ export default function CreativeConnectAfricaLanding() {
       {/* <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50 rotate-[180deg] -bottom-[500px]"></div> */}
       </section>
 
-      <section id="pillars" className="bg-white pt-36 relative">
+      {/* Image Grid Section */}
+      <section id="act-grid" className="bg-white pt-36 relative">
         <div className="">
           <div className="container mx-auto max-w-6xl grid lg:grid-cols-2 gap-12 items-center">
             <h2 className="text-5xl lg:text-5xl font-black text-black mb-6 leading-tight font-heading">
-                Celebrating Africa's Fashion, Film and Music
+                {t.imageGrid.title}
               </h2>
               <p className="text-lg leading-relaxed font-medium text-gray-600">
-              Creatives Connect Africa is a premier platform celebrating African creativity across film, music, and fashion. It brings together industry leaders, artists, and innovators for showcases, workshops, and collaborations that shape Africa’s global cultural impact.
-                </p>
+                {t.imageGrid.description}
+              </p>
           </div>
             {/* Image Grid */}
             <div className="w-full mt-16">
@@ -232,9 +549,6 @@ export default function CreativeConnectAfricaLanding() {
                     className="w-full h-full object-cover rounded-none hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-colors duration-300"></div>
-                  {/* <div className="absolute bottom-4 left-4">
-                    <h3 className="text-white font-bold text-lg">FASHION</h3>
-                  </div> */}
                 </div>
                 
                 <div className="relative overflow-hidden rounded-none h-[500px]">
@@ -246,9 +560,6 @@ export default function CreativeConnectAfricaLanding() {
                     className="w-full h-full object-cover rounded-none hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-colors duration-300"></div>
-                  {/* <div className="absolute bottom-4 left-4">
-                    <h3 className="text-white font-bold text-lg">FILM</h3>
-                  </div> */}
                 </div>
                 
                 <div className="relative overflow-hidden rounded-none h-[500px]">
@@ -260,73 +571,263 @@ export default function CreativeConnectAfricaLanding() {
                     className="w-full h-full object-cover rounded-none hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-colors duration-300"></div>
-                  {/* <div className="absolute bottom-4 left-4">
-                    <h3 className="text-white font-bold text-lg">MUSIC</h3>
-                  </div> */}
                 </div>
               </div>
             </div>
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="py-36 bg-black text-white relative">
+      {/* Activities Section */}
+      <section id="activities" className="py-20 bg-white text-black relative hidden">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl lg:text-7xl font-black mb-6 leading-tight font-heading">
+              {t.activities.title}
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto font-medium">
+              {t.activities.subtitle}
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Fashion Activity */}
+            <Card className="group bg-white border-2 border-gray-200 hover:border-orange-400 transition-all duration-300 overflow-hidden rounded-none">
+              <CardContent className="p-0">
+                <div className="relative">
+                  <Image
+                    src="https://indepthnews.net/wp-content/uploads/2018/12/mandela100_crowd-1.jpg"
+                    alt="African Fashion"
+                    width={400}
+                    height={300}
+                    className="w-full h-64 object-cover rounded-none"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+                <div className="p-8">
+                  <h3 className="text-3xl font-black mb-4 font-heading">{t.activities.fashion.title}</h3>
+                  <p className="text-gray-600 mb-6 font-medium">
+                    {t.activities.fashion.description}
+                  </p>
+                  <Button className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 font-bold rounded-none w-full">{t.activities.fashion.button}</Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Music Activity */}
+            <Card className="group bg-white border-2 border-gray-200 hover:border-purple-400 transition-all duration-300 overflow-hidden rounded-none">
+              <CardContent className="p-0">
+                <div className="relative">
+                  <Image
+                    src="https://www.gcbbank.com.gh/images/news/2019/GCB-Sponsors-SWIFT-African-Regional-Conference-.jpeg"
+                    alt="African Music"
+                    width={400}
+                    height={300}
+                    className="w-full h-64 object-cover rounded-none"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+                <div className="p-8">
+                  <h3 className="text-3xl font-black mb-4 font-heading">{t.activities.music.title}</h3>
+                  <p className="text-gray-600 mb-6 font-medium">
+                    {t.activities.music.description}
+                  </p>
+                  <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 font-bold rounded-none w-full">{t.activities.music.button}</Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Film Activity */}
+            <Card className="group bg-white border-2 border-gray-200 hover:border-green-400 transition-all duration-300 overflow-hidden rounded-none">
+              <CardContent className="p-0">
+                <div className="relative">
+                  <Image
+                    src="https://i0.wp.com/efsinc.org/wp-content/uploads/2019/01/50917005_614548135653353_3170554388439629824_o.jpg"
+                    alt="African Film"
+                    width={400}
+                    height={300}
+                    className="w-full h-64 object-cover rounded-none"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+                <div className="p-8">
+                  <h3 className="text-3xl font-black mb-4 font-heading">{t.activities.film.title}</h3>
+                  <p className="text-gray-600 mb-6 font-medium">
+                    {t.activities.film.description}
+                  </p>
+                  <Button className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 font-bold rounded-none w-full">{t.activities.film.button}</Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+
+      {/* Partners Section */}
+      <section id="partners" className="py-20 bg-white text-black relative">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+              {/* Left Column - Text Content */}
+              <div className="space-y-8">
+                <div>
+                  <h2 className="text-5xl lg:text-6xl font-black mb-6 leading-tight font-heading">
+                    {t.partners.title}
+                  </h2>
+                  <p className="text-lg text-gray-600 leading-relaxed font-medium">
+                    {t.partners.description}
+                  </p>
+                </div>
+                <Button className="border-2 border-black text-white hover:bg-black hover:text-white px-8 py-7 font-bold rounded-none transition-all">
+                  {t.partners.becomePartner}
+                </Button>
+              </div>
+
+              {/* Right Column - Partner Logos Grid */}
+              <div className="grid grid-cols-2 gap-8">
+                                 {/* Government of Ghana */}
+                 <div className="bg-gray-100 rounded-none p-8 flex items-center justify-center hover:bg-gray-200 transition-colors">
+                   <div className="text-center">
+                     <div className="w-40 h-40 flex items-center justify-center mx-auto mb-4 group">
+                       <Image
+                         src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Coat_of_arms_of_Ghana.svg/800px-Coat_of_arms_of_Ghana.svg.png"
+                         alt="Government of Ghana"
+                         width={100}
+                         height={100}
+                         className="w-full h-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                       />
+                     </div>
+                     {/* <div className="text-sm font-bold text-gray-700">GOVERNMENT OF</div>
+                     <div className="text-lg font-black text-gray-900">GHANA</div> */}
+                   </div>
+                 </div>
+
+                                 {/* AfCFTA Secretariat */}
+                 <div className="bg-gray-100 rounded-none p-8 flex items-center justify-center hover:bg-gray-200 transition-colors">
+                   <div className="text-center">
+                     <div className="w-40 h-40 flex items-center justify-center mx-auto mb-4 group">
+                       <Image
+                         src="https://au-afcfta.org/wp-content/uploads/2023/09/AfCFTA-Logo-1.svg"
+                         alt="AfCFTA Secretariat"
+                         width={90}
+                         height={90}
+                         className="w-full h-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                       />
+                     </div>
+                     {/* <div className="text-sm font-bold text-gray-700">AFCFTA</div>
+                     <div className="text-lg font-black text-gray-900">SECRETARIAT</div> */}
+                   </div>
+                 </div>
+
+                                 {/* Black Star Experience */}
+                 <div className="bg-gray-100 rounded-none p-8 flex items-center justify-center hover:bg-gray-200 transition-colors">
+                   <div className="text-center">
+                     <div className="w-40 h-40 flex items-center justify-center mx-auto mb-4 group">
+                       <Image
+                         src="https://blackstarexperience.org/wp-content/uploads/2025/04/TBSE-logo-02-1024x969.png"
+                         alt="Black Star Experience"
+                         width={90}
+                         height={90}
+                         className="w-full h-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                       />
+                     </div>
+                     {/* <div className="text-sm font-bold text-gray-700">BLACK STAR</div>
+                     <div className="text-lg font-black text-gray-900">EXPERIENCE</div> */}
+                   </div>
+                 </div>
+
+                                 {/* Africa Tourism Partners */}
+                 <div className="bg-gray-100 rounded-none p-8 flex items-center justify-center hover:bg-gray-200 transition-colors">
+                   <div className="text-center">
+                     <div className="w-40 h-40 flex items-center justify-center mx-auto mb-4 group">
+                       <Image
+                         src="https://ml8qqhkhe4g3.i.optimole.com/w:auto/h:auto/q:mauto/f:best/https://africatourismpartners.com/wp-content/uploads/2020/02/ATP-1_trans_0-1.png"
+                         alt="Africa Tourism Partners"
+                         width={90}
+                         height={90}
+                         className="w-full h-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                       />
+                     </div>
+                     {/* <div className="text-sm font-bold text-gray-700">AFRICA TOURISM</div>
+                     <div className="text-lg font-black text-gray-900">PARTNERS</div> */}
+                   </div>
+                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Three Pillars Section */}
+      <section id="pillars" className="bg-gray-200 text-black py-36">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-5xl lg:text-5xl font-black mb-1 leading-tight font-heading">
+            {t.pillars.title}
+          </h2>
+          <p className="mb-11">{t.pillars.subtitle}</p>
+
+          <div className="grid">
+            <div className="flex gap-4 px-8 py-11 border-t border-t-gray-300">
+              <div className="w-1/5">
+                <h2 className="text-6xl text-orange-500">01</h2>
+              </div>
+              <div className="w-2/5">
+                <p className="text-2xl">{t.pillars.film.title}</p>
+              </div>
+              <div className="w-2/5">
+                <p className="text-sm text-gray-400">{t.pillars.film.description}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-4 px-8 py-11 border-t border-t-gray-300">
+              <div className="w-1/5">
+                <h2 className="text-6xl text-blue-500">02</h2>
+              </div>
+              <div className="w-2/5">
+                <p className="text-2xl">{t.pillars.fashion.title}</p>
+              </div>
+              <div className="w-2/5">
+                <p className="text-sm text-gray-400">{t.pillars.fashion.description}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-4 px-8 py-11 border-y border-y-gray-300">
+              <div className="w-1/5">
+                <h2 className="text-6xl text-green-500">03</h2>
+              </div>
+              <div className="w-2/5">
+                <p className="text-2xl">{t.pillars.music.title}</p>
+              </div>
+              <div className="w-2/5">
+                <p className="text-sm text-gray-400">{t.pillars.music.description}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Registration Section */}
+      <section id="register" className="py-36 bg-black text-white relative">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-16 items-center">
               {/* Left Content Panel */}
               <div className="space-y-8">
                 <div>
-                <h2 className="text-5xl lg:text-5xl font-black mb-6 leading-tight font-heading">Register your interest</h2>
+                <h2 className="text-5xl lg:text-5xl font-black mb-6 leading-tight font-heading">{t.register.title}</h2>
                   <p className="text-lg text-gray-300 font-medium leading-relaxed">
-                    Creatives Connect Africa is more than an event - it's a movement that celebrates the power of African creativity. Join us in this transformative experience where tradition meets innovation.
+                    {t.register.description}
                   </p>
                 </div>
 
-                {/* Information Block */}
-                <div className="bg-gray-900/80 border border-white/20 rounded-none p-8 hidden">
-                  <div className="flex items-start space-x-6">
-                    <div className="text-center">
-                      <div className="text-4xl font-black text-orange-400">10-12</div>
-                      <div className="text-sm font-bold text-gray-300">DECEMBER</div>
-                    </div>
-                    <div className="space-y-4 flex-1">
-                      <div className="flex items-center space-x-3">
-                        <MapPin className="w-5 h-5 text-orange-400" />
-                        <span className="font-medium text-gray-200">La Palm Beach Hotel, Accra, Ghana</span>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <div className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">👥</span>
-                        </div>
-                        <span className="font-medium text-gray-200">500+ Attendees Expected</span>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">⚠</span>
-                        </div>
-                        <span className="font-medium text-gray-200">Registration Required</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Contact Form */}
+                {/* Call to Action Buttons */}
                 <div className="space-y-6">
-                  <div className="">
-                    <input
-                      type="email"
-                      placeholder="Enter your email"
-                      className="w-full px-6 py-4 rounded-none bg-gray-900/80 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 font-medium"
-                    />
-                  </div>
-                  
-                  {/* Call to Action Buttons */}
-                  <div className="flex space-x-2">
-                    <Button className="bg-orange-600 hover:bg-orange-700 text-white px-8 h-16 text-lg font-bold rounded-none flex-1">
-                      Book Now
-                    </Button>
-                  </div>
+                  <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white px-8 h-16 text-lg font-bold rounded-none">
+                    {t.register.attendEvent}
+                  </Button>
+                  <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white px-8 h-16 text-lg font-bold rounded-none">
+                    {t.register.exhibitor}
+                  </Button>
                 </div>
               </div>
 
@@ -362,50 +863,45 @@ export default function CreativeConnectAfricaLanding() {
         </div>
       </section>
 
-      <section id="themes" className="bg-gray-200 text-black py-36">
-        <div className="max-w-6xl mx-auto">
-        <h2 className="text-5xl lg:text-5xl font-black mb-1 leading-tight font-heading">
-              The 3 Pillars
+      {/* Contact Section */}
+      <section id="contact" className="py-20 bg-gray-900 text-white relative hidden">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl lg:text-6xl font-black mb-8 leading-tight font-heading">
+              {t.contact.title}
             </h2>
-            <p className="mb-11">Celebrating Africa’s Creative Excellence in Film, Music, and Fashion</p>
-
-            <div className="grid">
-              <div className="flex gap-4 px-8 py-11 border-t border-t-gray-300">
-                <div className="w-1/5">
-                <h2 className="text-6xl text-orange-500">01</h2>
-                </div>
-                <div className="w-2/5">
-                <p className="text-2xl">Film: Reshaping African Narratives</p>
-                </div>
-                <div className="w-2/5">
-                <p className="text-sm text-gray-400">Creatives Connect Africa showcases African cinema through film screenings, masterclasses, and industry networking, empowering filmmakers to collaborate, share stories, and shape the future of the continent’s film industry.</p>
-                </div>
+            <p className="text-xl text-gray-300 mb-12 font-medium">
+              {t.contact.subtitle}
+            </p>
+            
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-black/50 border border-white/20 rounded-none p-8">
+                <Mail className="w-12 h-12 text-orange-400 mx-auto mb-4" />
+                <h3 className="text-2xl font-bold mb-4">{t.contact.email.title}</h3>
+                <p className="text-gray-300 mb-4">{t.contact.email.description}</p>
+                <Link 
+                  href="mailto:info@creativeconnectAfrica.com"
+                  className="text-orange-400 hover:text-white transition-colors font-semibold text-lg"
+                >
+                  info@creativeconnectAfrica.com
+                </Link>
               </div>
-
-              <div className="flex gap-4 px-8 py-11 border-t border-t-gray-300">
-                <div className="w-1/5">
-                <h2 className="text-6xl text-blue-500">02</h2>
+              
+              <div className="bg-black/50 border border-white/20 rounded-none p-8">
+                <div className="w-12 h-12 bg-orange-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-bold">📞</span>
                 </div>
-                <div className="w-2/5">
-                <p className="text-2xl">Fashion: Blending heritage with global trends</p>
-                </div>
-                <div className="w-2/5">
-                <p className="text-sm text-gray-400">African fashion blends tradition and innovation, with designers, models, and textile artists showcasing collections, forging partnerships, and driving conversations on sustainability, ethical production, and market growth.</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 px-8 py-11 border-y border-y-gray-300">
-                <div className="w-1/5">
-                <h2 className="text-6xl text-green-500">03</h2>
-                </div>
-                <div className="w-2/5">
-                <p className="text-2xl">Music: The global heartbeat of Africa</p>
-                </div>
-                <div className="w-2/5">
-                <p className="text-sm text-gray-400">African music’s global influence comes alive through electrifying performances, collaborative workshops, and industry networking, fostering cross-continental partnerships and innovation in the thriving music scene.</p>
-                </div>
+                <h3 className="text-2xl font-bold mb-4">{t.contact.phone.title}</h3>
+                <p className="text-gray-300 mb-4">{t.contact.phone.description}</p>
+                <Link 
+                  href="tel:+233244123456"
+                  className="text-orange-400 hover:text-white transition-colors font-semibold text-lg"
+                >
+                  +233 24 412 3456
+                </Link>
               </div>
             </div>
+          </div>
         </div>
       </section>
 
@@ -434,7 +930,7 @@ export default function CreativeConnectAfricaLanding() {
             </div>
             <div className="space-y-6">
             <h2 className="text-5xl lg:text-7xl font-black text-white mb-6 leading-tight font-heading">
-              FILM: <span className="text-red-400">RESHAPING AFRICAN NARRATIVES</span>
+              {t.pillars.film.title}
             </h2>
               <p className="text-lg leading-relaxed font-medium text-gray-300">
                 The African film industry is a powerhouse of storytelling. Creatives Connect Africa provides a platform
@@ -461,7 +957,7 @@ export default function CreativeConnectAfricaLanding() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-5xl lg:text-7xl font-black text-white mb-6 leading-tight font-heading">
-              MUSIC: <span className="text-purple-600">THE GLOBAL HEARTBEAT OF AFRICA</span>
+              {t.pillars.music.title}
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto font-medium">
               From Afrobeats to traditional rhythms, showcasing the sounds that have captivated the world.
@@ -513,7 +1009,7 @@ export default function CreativeConnectAfricaLanding() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-5xl lg:text-7xl font-black text-white mb-6 leading-tight font-heading">
-              FASHION: <span className="text-green-400">BLENDING HERITAGE WITH GLOBAL TRENDS</span>
+              {t.pillars.fashion.title}
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto font-medium">
               Highlighting designers who fuse traditional African aesthetics with contemporary style, influencing global
@@ -805,11 +1301,10 @@ export default function CreativeConnectAfricaLanding() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-5xl lg:text-7xl font-black text-white mb-6 leading-tight font-heading">
-              JOIN THE <span className="text-orange-400">MOVEMENT</span>
+              {t.newsletter.title}
             </h2>
             <p className="text-xl text-gray-300 mb-12 leading-relaxed font-medium">
-              Be part of Africa's most significant creative economy gathering. Get exclusive updates on speakers,
-              programming, and opportunities.
+              {t.newsletter.subtitle}
             </p>
 
             <div className="bg-white/10 rounded-none p-8 border border-white/20">
@@ -817,43 +1312,111 @@ export default function CreativeConnectAfricaLanding() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <input
                     type="text"
-                    placeholder="First Name"
+                    placeholder={t.newsletter.firstName}
                     className="w-full px-6 py-4 rounded-none bg-white/90 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-400 font-medium"
                   />
                   <input
                     type="text"
-                    placeholder="Last Name"
+                    placeholder={t.newsletter.lastName}
                     className="w-full px-6 py-4 rounded-none bg-white/90 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-400 font-medium"
                   />
                 </div>
                 <input
                   type="email"
-                  placeholder="Email Address"
+                  placeholder={t.newsletter.email}
                   className="w-full px-6 py-4 rounded-none bg-white/90 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-400 font-medium"
                 />
                 <select className="w-full px-6 py-4 rounded-none bg-white/90 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-400 font-medium">
-                  <option>I'm interested as...</option>
-                  <option>Industry Professional</option>
-                  <option>Policymaker</option>
-                  <option>Investor</option>
-                  <option>Creative/Artist</option>
-                  <option>Media</option>
-                  <option>Development Partner</option>
-                  <option>Diaspora Representative</option>
-                  <option>Other</option>
+                  <option>{t.newsletter.interest}</option>
+                  <option>{t.newsletter.options.professional}</option>
+                  <option>{t.newsletter.options.policymaker}</option>
+                  <option>{t.newsletter.options.investor}</option>
+                  <option>{t.newsletter.options.creative}</option>
+                  <option>{t.newsletter.options.media}</option>
+                  <option>{t.newsletter.options.partner}</option>
+                  <option>{t.newsletter.options.diaspora}</option>
+                  <option>{t.newsletter.options.other}</option>
                 </select>
                 <Button
                   size="lg"
                   className="w-full bg-orange-600 hover:bg-orange-700 text-white py-6 text-xl font-bold rounded-none transform hover:scale-105 transition-all"
                 >
                   <Mail className="w-6 h-6 mr-3" />
-                  GET EXCLUSIVE UPDATES
+                  {t.newsletter.button}
                 </Button>
               </form>
             </div>
           </div>
         </div>
       </section>
+
+      
+             {/* Media Section */}
+       <section id="media" className="bg-black text-white relative overflow-hidden">
+         <div className="">
+
+           {/* Marquee Gallery */}
+           <div className="">
+             {/* First Row - Scrolling Left */}
+             <div className="flex overflow-hidden">
+               <div className="flex animate-scroll-left">
+                 {[
+                   "https://static01.nyt.com/images/2022/12/13/multimedia/13dc-african-summit-1-5f84/13dc-african-summit-1-5f84-videoSixteenByNineJumbo1600.jpg",
+                   "https://images.squarespace-cdn.com/content/v1/5f075d33e4ac9c3b05ca695e/1608135598073-SP8USL4632R82D136QQO/19264733_690328184505668_6606660888089315828_o.jpg",
+                   "https://2021-2025.state.gov/wp-content/uploads/2022/12/52565517956_a94eb34769_5k-1024x683.jpg",
+                   "https://africacdc.org/wp-content/uploads/2024/01/The-Third-International-Conference-on-Public-Health-in-Africa-CPHIA-2023-1024x623.jpg",
+                   "https://www.ox.ac.uk/sites/files/oxford/styles/ow_medium_feature/s3/field/field_image_main/oxford_africa_conference-152.jpg?itok=d_zfbFLA",
+                   "https://moderndiplomacy.eu/wp-content/uploads/2024/11/russia-africa.jpg",
+                   "https://gsmn.co.za/wp-content/uploads/2024/11/russiaaa-1.jpg",
+                   "https://www.un.org/ohrlls/sites/www.un.org.ohrlls/files/styles/panopoly_image_original/public/news_articles/lldc3-regional_meeting.png?itok=bJBZY9eP"
+                 ].map((src, index) => (
+                   <div key={index} className="flex-shrink-0 group">
+                                           <div className="relative overflow-hidden rounded-none w-85 h-96">
+                        <Image
+                          src={src}
+                          alt={`Media gallery image ${index + 1}`}
+                          width={350}
+                          height={400}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                       <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300"></div>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             </div>
+
+             {/* Second Row - Scrolling Right */}
+             <div className="flex overflow-hidden">
+             <div className="flex animate-scroll-right">
+                 {[
+                   "https://static01.nyt.com/images/2022/12/13/multimedia/13dc-african-summit-1-5f84/13dc-african-summit-1-5f84-videoSixteenByNineJumbo1600.jpg",
+                   "https://images.squarespace-cdn.com/content/v1/5f075d33e4ac9c3b05ca695e/1608135598073-SP8USL4632R82D136QQO/19264733_690328184505668_6606660888089315828_o.jpg",
+                   "https://2021-2025.state.gov/wp-content/uploads/2022/12/52565517956_a94eb34769_5k-1024x683.jpg",
+                   "https://africacdc.org/wp-content/uploads/2024/01/The-Third-International-Conference-on-Public-Health-in-Africa-CPHIA-2023-1024x623.jpg",
+                   "https://www.ox.ac.uk/sites/files/oxford/styles/ow_medium_feature/s3/field/field_image_main/oxford_africa_conference-152.jpg?itok=d_zfbFLA",
+                   "https://moderndiplomacy.eu/wp-content/uploads/2024/11/russia-africa.jpg",
+                   "https://gsmn.co.za/wp-content/uploads/2024/11/russiaaa-1.jpg",
+                   "https://www.un.org/ohrlls/sites/www.un.org.ohrlls/files/styles/panopoly_image_original/public/news_articles/lldc3-regional_meeting.png?itok=bJBZY9eP"
+                 ].map((src, index) => (
+                   <div key={index} className="flex-shrink-0 group">
+                                           <div className="relative overflow-hidden rounded-none w-85 h-96">
+                        <Image
+                          src={src}
+                          alt={`Media gallery image ${index + 1}`}
+                          width={350}
+                          height={400}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                       <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-300"></div>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             </div>
+           </div>
+         </div>
+       </section>
 
 
 
@@ -872,12 +1435,11 @@ export default function CreativeConnectAfricaLanding() {
                 />
               </div>
               <p className="text-gray-400 max-w-md text-lg font-medium">
-                The inaugural Festival & Forum spotlighting Africa's creative industries as catalysts for continental
-                integration under the AfCFTA.
+                {t.footer.description}
               </p>
               <div className="text-gray-400">
                 <p className="font-medium">
-                  Contact:{" "}
+                  {t.footer.contact}:{" "}
                   <Link
                     href="mailto:info@creativeconnectAfrica.com"
                     className="text-orange-400 hover:text-white transition-colors font-semibold"
@@ -889,12 +1451,11 @@ export default function CreativeConnectAfricaLanding() {
             </div>
 
             <div>
-              <h4 className="text-xl font-black text-white mb-6 font-heading">EVENT DETAILS</h4>
+              <h4 className="text-xl font-black text-white mb-6 font-heading">{t.footer.eventDetails}</h4>
               <div className="space-y-3 text-gray-400">
-                <p className="font-bold text-orange-400">DECEMBER 10-12, 2025</p>
-                <p className="font-medium">La Palm Beach Hotel</p>
-                <p className="font-medium">Accra, Ghana</p>
-                <Badge className="bg-orange-500 text-white mt-4 rounded-none">Coming Soon</Badge>
+                <p className="font-bold text-orange-400">{t.hero.date}</p>
+                <p className="font-medium">{t.hero.location}</p>
+                <Badge className="bg-orange-500 text-white mt-4 rounded-none">{t.footer.comingSoon}</Badge>
               </div>
             </div>
 
