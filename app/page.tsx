@@ -361,13 +361,37 @@ export default function CreativeConnectAfricaLanding() {
             className="w-full h-full object-cover absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 min-w-full min-h-full pointer-events-none"
             title="Creatives Connect Africa Background Video"
           ></iframe>
-          <div className="absolute inset-0 bg-purple-900/50"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50"></div>
+          <div className="absolute inset-0 bg-purple-900/70"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/70"></div>
         </div>
 
 
         <div className="container mx-auto px-4 relative z-10 text-center">
           <div className="max-w-6xl mx-auto">
+
+            <div className="flex flex-col md:flex-row justify-center items-center gap-6 max-w-3xl mx-auto mb-5">
+            <Image
+              src="https://au-afcfta.org/wp-content/uploads/2023/09/AfCFTA-Logo-1.svg"
+              alt="AfCFTA Secretariat"
+              width={90}
+              height={90}
+              className="object-contain"
+            />
+                        <Image
+              src="https://blackstarexperience.org/wp-content/uploads/2025/04/TBSE-logo-02-1024x969.png"
+              alt="AfCFTA Secretariat"
+              width={90}
+              height={90}
+              className="object-contain"
+            />
+                        <Image
+              src="https://ml8qqhkhe4g3.i.optimole.com/w:auto/h:auto/q:mauto/f:best/https://africatourismpartners.com/wp-content/uploads/2020/02/ATP-1_trans_0-1.png"
+              alt="AfCFTA Secretariat"
+              width={90}
+              height={90}
+              className="object-contain"
+            />
+            </div>
 
             {/* Event Details - No Box */}
             <div className="flex flex-col md:flex-row justify-center items-center gap-6 max-w-3xl mx-auto mb-5">
