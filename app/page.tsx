@@ -3,12 +3,25 @@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { Calendar, MapPin, Mail, Play, ArrowRight, Clock, ChevronDown } from "lucide-react"
+import { Calendar, MapPin, Mail, Play, ArrowRight, Clock, ChevronDown, X } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { submitParticipantRegistration, submitExhibitorRegistration } from "@/lib/firebaseService"
+import { SuccessToast, ErrorToast } from "@/components/ui/success-toast"
 
 export default function CreativeConnectAfricaLanding() {
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState({ title: '', description: '' });
+  
   const [countdown, setCountdown] = useState({
     days: 0,
     hours: 0,
@@ -17,6 +30,156 @@ export default function CreativeConnectAfricaLanding() {
   });
 
   const [language, setLanguage] = useState<'en' | 'fr'>('en');
+  
+  // Modal states
+  const [participantModalOpen, setParticipantModalOpen] = useState(false);
+  const [exhibitorModalOpen, setExhibitorModalOpen] = useState(false);
+  
+  // Form states
+  const [participantForm, setParticipantForm] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    country: '',
+    identificationNumber: '',
+    organization: '',
+    designation: '',
+    visaSupport: '',
+    futureUpdates: '',
+    consent: false
+  });
+  
+  const [exhibitorForm, setExhibitorForm] = useState({
+    organizationName: '',
+    contactPerson: '',
+    email: '',
+    phone: '',
+    country: '',
+    website: '',
+    aboutCompany: '',
+    productsServices: '',
+    category: '',
+    boothNeeds: '',
+    logoUpload: null,
+    shippingAssistance: '',
+    accommodationAssistance: '',
+    additionalAssistance: '',
+    consent: false,
+    includeInHandbook: ''
+  });
+
+  // Countries list
+  const countries = [
+    'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria',
+    'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan',
+    'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cabo Verde', 'Cambodia',
+    'Cameroon', 'Canada', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo', 'Costa Rica',
+    'Croatia', 'Cuba', 'Cyprus', 'Czech Republic', 'Democratic Republic of the Congo', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador',
+    'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland', 'France',
+    'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau',
+    'Guyana', 'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland',
+    'Israel', 'Italy', 'Ivory Coast', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kuwait',
+    'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg',
+    'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius', 'Mexico',
+    'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nauru',
+    'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'North Macedonia', 'Norway', 'Oman',
+    'Pakistan', 'Palau', 'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal',
+    'Qatar', 'Romania', 'Russia', 'Rwanda', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino', 'Sao Tome and Principe',
+    'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 'Solomon Islands', 'Somalia',
+    'South Africa', 'South Korea', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname', 'Sweden', 'Switzerland', 'Syria',
+    'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey',
+    'Turkmenistan', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States', 'Uruguay', 'Uzbekistan', 'Vanuatu',
+    'Vatican City', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe'
+  ];
+
+  // Form handlers
+  const handleParticipantFormChange = (field: string, value: any) => {
+    setParticipantForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleExhibitorFormChange = (field: string, value: any) => {
+    setExhibitorForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleParticipantSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const result = await submitParticipantRegistration(participantForm);
+      
+      if (result.success) {
+        setToastMessage({
+          title: "🎉 Registration Successful!",
+          description: "Thank you for registering for Creatives Connect Afrika Festival & Forum 2025. We've received your application and will be in touch soon with further details."
+        });
+        setShowSuccessToast(true);
+        setParticipantModalOpen(false);
+        // Reset form
+        setParticipantForm({
+          fullName: '',
+          email: '',
+          phone: '',
+          country: '',
+          identificationNumber: '',
+          organization: '',
+          designation: '',
+          visaSupport: '',
+          futureUpdates: '',
+          consent: false
+        });
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      setToastMessage({
+        title: "❌ Registration Failed",
+        description: "There was an error submitting your registration. Please try again or contact support if the problem persists."
+      });
+      setShowErrorToast(true);
+    }
+  };
+
+  const handleExhibitorSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const result = await submitExhibitorRegistration(exhibitorForm);
+      
+      if (result.success) {
+        setToastMessage({
+          title: "🎉 Exhibitor Registration Successful!",
+          description: "Thank you for registering as an exhibitor for Creatives Connect Afrika Festival & Forum 2025. Our team will review your application and contact you with exhibition details."
+        });
+        setShowSuccessToast(true);
+        setExhibitorModalOpen(false);
+        // Reset form
+        setExhibitorForm({
+          organizationName: '',
+          contactPerson: '',
+          email: '',
+          phone: '',
+          country: '',
+          website: '',
+          aboutCompany: '',
+          productsServices: '',
+          category: '',
+          boothNeeds: '',
+          logoUpload: null,
+          shippingAssistance: '',
+          accommodationAssistance: '',
+          additionalAssistance: '',
+          consent: false,
+          includeInHandbook: ''
+        });
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      setToastMessage({
+        title: "❌ Registration Failed",
+        description: "There was an error submitting your exhibitor registration. Please try again or contact support if the problem persists."
+      });
+      setShowErrorToast(true);
+    }
+  };
 
   const translations = {
     en: {
@@ -29,10 +192,10 @@ export default function CreativeConnectAfricaLanding() {
         contact: "Contact"
       },
       hero: {
-        title: "CREATIVES CONNECT AFRICA",
-        subtitle: "The AfCFA Forum & Festival on Tourism, Creatives & Cultural Industries",
+        title: "Creatives Connect Afrika",
+        subtitle: "The AfCFTA Forum & Festival on Tourism, Creatives & Cultural Industries",
         registerNow: "Register Now",
-        date: "10 – 12 DECEMBER",
+        date: "26 – 28 NOVEMBER",
         location: "ACCRA, GHANA"
       },
       countdown: {
@@ -41,11 +204,11 @@ export default function CreativeConnectAfricaLanding() {
         hours: "HOURS",
         minutes: "MINUTES",
         seconds: "SECONDS",
-        dateLocation: "December 10-12, 2025 • Accra, Ghana"
+        dateLocation: "November 26-28, 2025 • Accra, Ghana"
       },
       about: {
         title: "ABOUT THE EVENT",
-        description: "Creatives Connect Africa is the inaugural Festival & Forum designed to spotlight Africa's creative industries as catalysts for trade and continental integration. Hosted in Accra, Ghana from 10 – 12 December 2025, this groundbreaking event brings together, creatives investors, and industry leaders for dialogue, deal-making, and celebration."
+        description: "Creatives Connect Afrika is the inaugural Festival & Forum designed to spotlight Africa's creative industries as catalysts for trade and continental integration. Hosted in Accra, Ghana from 10 – 12 December 2025, this groundbreaking event brings together, creatives investors, and industry leaders for dialogue, deal-making, and celebration."
       },
       activities: {
         title: "ACTIVITIES",
@@ -69,18 +232,18 @@ export default function CreativeConnectAfricaLanding() {
       partners: {
         title: "Our Partners",
         subtitle: "Meet the organizations driving Africa's creative economy forward",
-        description: "Creatives Connect Africa brings together leading organizations from across the continent to drive innovation, cultural exchange, and economic growth through Africa's creative industries.",
+        description: "Creatives Connect Afrika brings together leading organizations from across the continent to drive innovation, cultural exchange, and economic growth through Africa's creative industries.",
         becomePartner: "BECOME A PARTNER"
       },
       register: {
         title: "Register Now",
-        description: "Creatives Connect Africa is more than an event - it's a movement that celebrates the power of African creativity. Join us in this transformative experience where tradition meets innovation.",
+        description: "Creatives Connect Afrika is more than an event - it's a movement that celebrates the power of African creativity. Join us in this transformative experience where tradition meets innovation.",
         attendEvent: "Register to Attend Event",
         exhibitor: "Register as Exhibitor"
       },
       contact: {
         title: "Contact Us",
-        subtitle: "Get in touch with us for more information about Creatives Connect Africa",
+        subtitle: "Get in touch with us for more information about Creatives Connect Afrika",
         email: {
           title: "Email",
           description: "For general inquiries and registration support"
@@ -95,7 +258,7 @@ export default function CreativeConnectAfricaLanding() {
         subtitle: "Celebrating Africa's Creative Excellence in Film, Music, and Fashion",
         film: {
           title: "Film: Reshaping African Narratives",
-          description: "Creatives Connect Africa showcases African cinema through film screenings, masterclasses, and industry networking, empowering filmmakers to collaborate, share stories, and shape the future of the continent's film industry."
+          description: "Creatives Connect Afrika showcases African cinema through film screenings, masterclasses, and industry networking, empowering filmmakers to collaborate, share stories, and shape the future of the continent's film industry."
         },
         fashion: {
           title: "Fashion: Blending heritage with global trends",
@@ -133,7 +296,7 @@ export default function CreativeConnectAfricaLanding() {
       },
       imageGrid: {
         title: "Celebrating Africa's Fashion, Film and Music",
-        description: "Creatives Connect Africa is a premier platform celebrating African creativity across film, music, and fashion. It brings together industry leaders, artists, and innovators for showcases, workshops, and collaborations that shape Africa's global cultural impact."
+        description: "Creatives Connect Afrika is a premier platform celebrating African creativity across film, music, and fashion. It brings together industry leaders, artists, and innovators for showcases, workshops, and collaborations that shape Africa's global cultural impact."
       },
     },
     fr: {
@@ -146,10 +309,10 @@ export default function CreativeConnectAfricaLanding() {
         contact: "Contact"
       },
       hero: {
-        title: "CREATIVES CONNECT AFRICA",
-        subtitle: "Le Forum et Festival AfCFA sur le Tourisme, les Industries Créatives et Culturelles",
+        title: "Creatives Connect Afrika",
+        subtitle: "Le Forum et Festival AfCFTA sur le Tourisme, les Industries Créatives et Culturelles",
         registerNow: "S'inscrire Maintenant",
-        date: "10 – 12 DÉCEMBRE",
+        date: "26 – 28 NOVEMBRE",
         location: "ACCRA, GHANA"
       },
       countdown: {
@@ -158,11 +321,11 @@ export default function CreativeConnectAfricaLanding() {
         hours: "HEURES",
         minutes: "MINUTES",
         seconds: "SECONDES",
-        dateLocation: "10-12 décembre 2025 • Accra, Ghana"
+        dateLocation: "26-28 novembre 2025 • Accra, Ghana"
       },
       about: {
         title: "À PROPOS DE L'ÉVÉNEMENT",
-        description: "Creatives Connect Africa est le Festival et Forum inaugural conçu pour mettre en lumière les industries créatives africaines comme catalyseurs du commerce et de l'intégration continentale. Organisé à Accra, Ghana du 10 au 12 décembre 2025, cet événement révolutionnaire réunit créateurs, investisseurs et leaders de l'industrie pour le dialogue, la conclusion d'accords et la célébration."
+        description: "Creatives Connect Afrika est le Festival et Forum inaugural conçu pour mettre en lumière les industries créatives africaines comme catalyseurs du commerce et de l'intégration continentale. Organisé à Accra, Ghana du 26 au 28 novembre 2025, cet événement révolutionnaire réunit créateurs, investisseurs et leaders de l'industrie pour le dialogue, la conclusion d'accords et la célébration."
       },
       activities: {
         title: "ACTIVITÉS",
@@ -186,18 +349,18 @@ export default function CreativeConnectAfricaLanding() {
       partners: {
         title: "Nos Partenaires",
         subtitle: "Découvrez les organisations qui font avancer l'économie créative africaine",
-        description: "Creatives Connect Africa réunit les principales organisations du continent pour stimuler l'innovation, les échanges culturels et la croissance économique à travers les industries créatives africaines.",
+        description: "Creatives Connect Afrika réunit les principales organisations du continent pour stimuler l'innovation, les échanges culturels et la croissance économique à travers les industries créatives africaines.",
         becomePartner: "DEVENIR PARTENAIRE"
       },
       register: {
         title: "S'inscrire Maintenant",
-        description: "Creatives Connect Africa est plus qu'un événement - c'est un mouvement qui célèbre le pouvoir de la créativité africaine. Rejoignez-nous dans cette expérience transformative où tradition et innovation se rencontrent.",
+        description: "Creatives Connect Afrika est plus qu'un événement - c'est un mouvement qui célèbre le pouvoir de la créativité africaine. Rejoignez-nous dans cette expérience transformative où tradition et innovation se rencontrent.",
         attendEvent: "S'inscrire pour Participer",
         exhibitor: "S'inscrire comme Exposant"
       },
       contact: {
         title: "Contactez-nous",
-        subtitle: "Contactez-nous pour plus d'informations sur Creatives Connect Africa",
+        subtitle: "Contactez-nous pour plus d'informations sur Creatives Connect Afrika",
         email: {
           title: "Email",
           description: "Pour les demandes générales et le support d'inscription"
@@ -212,7 +375,7 @@ export default function CreativeConnectAfricaLanding() {
         subtitle: "Célébrer l'Excellence Créative Africaine en Cinéma, Musique et Mode",
         film: {
           title: "Cinéma: Redéfinir les Récits Africains",
-          description: "Creatives Connect Africa présente le cinéma africain à travers des projections, des masterclass et du réseautage industriel, permettant aux cinéastes de collaborer, partager des histoires et façonner l'avenir de l'industrie cinématographique du continent."
+          description: "Creatives Connect Afrika présente le cinéma africain à travers des projections, des masterclass et du réseautage industriel, permettant aux cinéastes de collaborer, partager des histoires et façonner l'avenir de l'industrie cinématographique du continent."
         },
         fashion: {
           title: "Mode: Allier patrimoine et tendances mondiales",
@@ -250,7 +413,7 @@ export default function CreativeConnectAfricaLanding() {
       },
       imageGrid: {
         title: "Célébrer la Mode, le Cinéma et la Musique Africains",
-        description: "Creatives Connect Africa est une plateforme de premier plan qui célèbre la créativité africaine à travers le cinéma, la musique et la mode. Elle réunit les leaders de l'industrie, les artistes et les innovateurs pour des présentations, des ateliers et des collaborations qui façonnent l'impact culturel global de l'Afrique."
+        description: "Creatives Connect Afrika est une plateforme de premier plan qui célèbre la créativité africaine à travers le cinéma, la musique et la mode. Elle réunit les leaders de l'industrie, les artistes et les innovateurs pour des présentations, des ateliers et des collaborations qui façonnent l'impact culturel global de l'Afrique."
       },
     }
   };
@@ -258,7 +421,7 @@ export default function CreativeConnectAfricaLanding() {
   const t = translations[language as keyof typeof translations];
 
   useEffect(() => {
-    const eventDate = new Date('December 10, 2025 09:00:00').getTime();
+    const eventDate = new Date('November 26, 2025 09:00:00').getTime();
     
     const timer = setInterval(() => {
       const now = new Date().getTime();
@@ -286,7 +449,7 @@ export default function CreativeConnectAfricaLanding() {
             <div className="flex items-center space-x-4">
               <Image
                 src="/creatives-connect-africa-logo.png"
-                alt="Creatives Connect Africa Logo"
+                alt="Creatives Connect Afrika Logo"
                 width={180}
                 height={40}
                 className="rounded-none"
@@ -312,6 +475,9 @@ export default function CreativeConnectAfricaLanding() {
                 <Link href="#contact" className="text-gray-300 hover:text-white transition-colors">
                   {t.nav.contact}
                 </Link>
+                {/* <Link href="/admin" className="text-orange-400 hover:text-orange-300 transition-colors font-semibold">
+                  Admin Dashboard
+                </Link> */}
               </nav>
             </div>
             <div className="flex items-center space-x-6">
@@ -351,7 +517,7 @@ export default function CreativeConnectAfricaLanding() {
             allow="autoplay; fullscreen; picture-in-picture"
             allowFullScreen
             className="w-full h-full object-cover absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 min-w-full min-h-full pointer-events-none"
-            title="Creatives Connect Africa Background Video"
+            title="Creatives Connect Afrika Background Video"
           ></iframe> */}
           <iframe 
             src="https://www.youtube.com/embed/sV1wHxxm9iQ?autoplay=1&amp;mute=1&amp;loop=1&amp;playlist=sV1wHxxm9iQ&amp;controls=0&amp;showinfo=0&amp;rel=0&amp;iv_load_policy=3&amp;modestbranding=1&amp;disablekb=1&amp;fs=0&amp;cc_load_policy=0&amp;playsinline=1&amp;enablejsapi=1"
@@ -359,7 +525,7 @@ export default function CreativeConnectAfricaLanding() {
             allow="autoplay; fullscreen; picture-in-picture"
             allowFullScreen
             className="w-full h-full object-cover absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 min-w-full min-h-full pointer-events-none"
-            title="Creatives Connect Africa Background Video"
+            title="Creatives Connect Afrika Background Video"
           ></iframe>
           <div className="absolute inset-0 bg-purple-900/70"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/70"></div>
@@ -370,30 +536,43 @@ export default function CreativeConnectAfricaLanding() {
           <div className="max-w-6xl mx-auto">
 
             <div className="flex flex-col md:flex-row justify-center items-center gap-6 max-w-3xl mx-auto mb-5">
-            <Image
-              src="https://au-afcfta.org/wp-content/uploads/2023/09/AfCFTA-Logo-1.svg"
-              alt="AfCFTA Secretariat"
-              width={90}
-              height={90}
-              className="object-contain"
-            />
-                        <Image
-              src="https://blackstarexperience.org/wp-content/uploads/2025/04/TBSE-logo-02-1024x969.png"
-              alt="AfCFTA Secretariat"
-              width={90}
-              height={90}
-              className="object-contain"
-            />
-                        <Image
-              src="https://ml8qqhkhe4g3.i.optimole.com/w:auto/h:auto/q:mauto/f:best/https://africatourismpartners.com/wp-content/uploads/2020/02/ATP-1_trans_0-1.png"
-              alt="AfCFTA Secretariat"
-              width={90}
-              height={90}
-              className="object-contain"
-            />
+              <Image
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Coat_of_arms_of_Ghana.svg/800px-Coat_of_arms_of_Ghana.svg.png"
+                alt="Ghana Coat of Arms"
+                width={100}
+                height={100}
+                className="object-contain"
+              />
+              <Image
+                src="https://au-afcfta.org/wp-content/uploads/2023/09/AfCFTA-Logo-1.svg"
+                alt="AfCFTA Secretariat"
+                width={100}
+                height={100}
+                className="object-contain"
+              />
             </div>
 
             {/* Event Details - No Box */}
+            <div className="flex flex-col md:flex-row justify-center items-center gap-6 max-w-3xl mx-auto mb-5">
+              <div className="flex items-center gap-3 text-white">
+                {/* <Calendar className="w-6 h-6" /> */}
+                <div>
+                  <p className="text-xl font-bold font-heading">THE GOVERNMENT OF GHANA IN PARTNERSHIP WITH AfCFTA PRESENTS</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Main Title */}
+            <h1 className="text-5xl lg:text-7xl font-black mb-6 leading-tight font-heading">
+              <span className="block text-white">
+                CREATIVES <span className="block text-orange-400 inline">CONNECT</span> AFRIKA</span>
+            </h1>
+
+            {/* Subtitle */}
+            <div className="mb-8">
+              <p className="text-xl lg:text-2xl font-bold text-gray-200 mb-4 font-heading max-w-2xl mx-auto">{t.hero.subtitle}</p>
+            </div>
+
             <div className="flex flex-col md:flex-row justify-center items-center gap-6 max-w-3xl mx-auto mb-5">
               <div className="flex items-center gap-3 text-white">
                 {/* <Calendar className="w-6 h-6" /> */}
@@ -410,15 +589,28 @@ export default function CreativeConnectAfricaLanding() {
               </div>
             </div>
 
-            {/* Main Title */}
-            <h1 className="text-6xl lg:text-8xl font-black mb-6 leading-tight font-heading">
-              <span className="block text-white">
-                CREATIVES <span className="block text-orange-400 inline">CONNECT</span> AFRICA</span>
-            </h1>
-
-            {/* Subtitle */}
-            <div className="mb-8">
-              <p className="text-xl lg:text-2xl font-bold text-gray-200 mb-4 font-heading max-w-2xl mx-auto">{t.hero.subtitle}</p>
+            <div className="flex flex-col md:flex-row justify-center items-center gap-6 max-w-3xl mx-auto mb-5">
+              <Image
+                src="https://au-afcfta.org/wp-content/uploads/2023/09/AfCFTA-Logo-1.svg"
+                alt="AfCFTA Secretariat"
+                width={70}
+                height={70}
+                className="object-contain"
+              />
+              <Image
+                src="https://blackstarexperience.org/wp-content/uploads/2025/04/TBSE-logo-02-1024x969.png"
+                alt="TBSE Logo"
+                width={70}
+                height={70}
+                className="object-contain"
+              />
+              <Image
+                src="https://ml8qqhkhe4g3.i.optimole.com/w:auto/h:auto/q:mauto/f:best/https://africatourismpartners.com/wp-content/uploads/2020/02/ATP-1_trans_0-1.png"
+                alt="ATP Logo"
+                width={70}
+                height={70}
+                className="object-contain"
+              />
             </div>
 
             {/* Social Media */}
@@ -427,7 +619,7 @@ export default function CreativeConnectAfricaLanding() {
                 href="https://twitter.com/creativeconnectafrica" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+                className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
               >
                 <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
@@ -438,7 +630,7 @@ export default function CreativeConnectAfricaLanding() {
                 href="https://facebook.com/creativeconnectafrica" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+                className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
               >
                 <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
@@ -449,7 +641,7 @@ export default function CreativeConnectAfricaLanding() {
                 href="https://instagram.com/creativeconnectafrica" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+                className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
               >
                 <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
@@ -509,7 +701,7 @@ export default function CreativeConnectAfricaLanding() {
                 </h2>
                 <div className="space-y-6 text-lg leading-relaxed">
                   <p className="text-xl font-bold text-gray-200">
-                    Creatives Connect Africa 2025 is the inaugural Festival & Forum designed to spotlight Africa's
+                    Creatives Connect Afrika 2025 is the inaugural Festival & Forum designed to spotlight Africa's
                     creative industries as catalysts for trade and continental integration.
                   </p>
                   <p className="font-medium text-gray-300">
@@ -521,7 +713,7 @@ export default function CreativeConnectAfricaLanding() {
               <div className="relative">
                 <Image
                   src="/placeholder.svg?height=500&width=600"
-                  alt="Creatives Connect Africa Event"
+                  alt="Creatives Connect Afrika Event"
                   width={600}
                   height={500}
                   className="rounded-none shadow-2xl"
@@ -846,10 +1038,16 @@ export default function CreativeConnectAfricaLanding() {
 
                 {/* Call to Action Buttons */}
                 <div className="space-y-6">
-                  <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white px-8 h-16 text-lg font-bold rounded-none">
+                  <Button 
+                    onClick={() => setParticipantModalOpen(true)}
+                    className="w-full bg-orange-600 hover:bg-orange-700 text-white px-8 h-16 text-lg font-bold rounded-none"
+                  >
                     {t.register.attendEvent}
                   </Button>
-                  <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white px-8 h-16 text-lg font-bold rounded-none">
+                  <Button 
+                    onClick={() => setExhibitorModalOpen(true)}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white px-8 h-16 text-lg font-bold rounded-none"
+                  >
                     {t.register.exhibitor}
                   </Button>
                 </div>
@@ -860,7 +1058,7 @@ export default function CreativeConnectAfricaLanding() {
                 <div className="relative rounded-none overflow-hidden shadow-2xl">
                   <Image
                     src="https://au-afcfta.org/wp-content/uploads/2025/07/Gva0nk9WgAAF4of.jpeg"
-                    alt="Creatives Connect Africa Event"
+                    alt="Creatives Connect Afrika Event"
                     width={500}
                     height={600}
                     className="w-full h-auto object-cover rounded-none"
@@ -957,7 +1155,7 @@ export default function CreativeConnectAfricaLanding() {
               {t.pillars.film.title}
             </h2>
               <p className="text-lg leading-relaxed font-medium text-gray-300">
-                The African film industry is a powerhouse of storytelling. Creatives Connect Africa provides a platform
+                The African film industry is a powerhouse of storytelling. Creatives Connect Afrika provides a platform
                 for filmmakers to showcase their work, engage in co-production deals, and discuss the future of African
                 cinema.
               </p>
@@ -1062,7 +1260,7 @@ export default function CreativeConnectAfricaLanding() {
             </div>
             <div className="space-y-6">
               <p className="text-lg leading-relaxed font-medium text-gray-300">
-                African fashion is a vibrant tapestry of tradition and innovation. Creatives Connect Africa provides a
+                African fashion is a vibrant tapestry of tradition and innovation. Creatives Connect Afrika provides a
                 platform for designers, models, and textile artists to showcase collections and forge partnerships.
               </p>
               <p className="text-lg leading-relaxed font-medium text-gray-300">
@@ -1452,7 +1650,7 @@ export default function CreativeConnectAfricaLanding() {
               <div className="flex items-center space-x-4">
                 <Image
                   src="/creatives-connect-africa-logo.png"
-                  alt="Creatives Connect Africa Logo"
+                  alt="Creatives Connect Afrika Logo"
                   width={180}
                   height={40}
                   className="rounded-none"
@@ -1532,12 +1730,496 @@ export default function CreativeConnectAfricaLanding() {
 
           <div className="border-t border-white/10 mt-12 pt-8 text-center">
             <p className="text-gray-400 font-medium">
-              &copy; 2025 Creatives Connect Africa. A collaboration between AfCFTA Secretariat, Africa Tourism Partners,
+              &copy; 2025 Creatives Connect Afrika. A collaboration between AfCFTA Secretariat, Africa Tourism Partners,
               and Black Star Experience.
             </p>
           </div>
         </div>
       </footer>
+
+      {/* Participant Registration Modal */}
+      <Dialog open={participantModalOpen} onOpenChange={setParticipantModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white text-black rounded-none border-0">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-center mb-6">
+              Participant Registration Form
+            </DialogTitle>
+          </DialogHeader>
+          
+          <form onSubmit={handleParticipantSubmit} className="space-y-6">
+            {/* Personal Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-gray-800 border-b border-gray-200 pb-2">1. Personal Information</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="fullName" className="text-sm font-semibold">Full Name *</Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    required
+                    value={participantForm.fullName}
+                    onChange={(e) => handleParticipantFormChange('fullName', e.target.value)}
+                    className="mt-1 rounded-none"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="email" className="text-sm font-semibold">Email Address *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    required
+                    value={participantForm.email}
+                    onChange={(e) => handleParticipantFormChange('email', e.target.value)}
+                    className="mt-1 rounded-none"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="phone" className="text-sm font-semibold">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={participantForm.phone}
+                    onChange={(e) => handleParticipantFormChange('phone', e.target.value)}
+                    className="mt-1 rounded-none"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="country" className="text-sm font-semibold">Country of Origin *</Label>
+                  <Select value={participantForm.country} onValueChange={(value) => handleParticipantFormChange('country', value)}>
+                    <SelectTrigger className="mt-1 rounded-none">
+                      <SelectValue placeholder="Select your country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {countries.map((country) => (
+                        <SelectItem key={country} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="identificationNumber" className="text-sm font-semibold">Identification Number *</Label>
+                  <Input
+                    id="identificationNumber"
+                    type="text"
+                    required
+                    value={participantForm.identificationNumber}
+                    onChange={(e) => handleParticipantFormChange('identificationNumber', e.target.value)}
+                    className="mt-1 rounded-none"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="organization" className="text-sm font-semibold">Organization / Institution / Freelance *</Label>
+                  <Input
+                    id="organization"
+                    type="text"
+                    required
+                    value={participantForm.organization}
+                    onChange={(e) => handleParticipantFormChange('organization', e.target.value)}
+                    className="mt-1 rounded-none"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="designation" className="text-sm font-semibold">Designation / Role *</Label>
+                <Input
+                  id="designation"
+                  type="text"
+                  required
+                  value={participantForm.designation}
+                  onChange={(e) => handleParticipantFormChange('designation', e.target.value)}
+                  className="mt-1 rounded-none"
+                />
+              </div>
+            </div>
+
+            {/* Additional Questions */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-gray-800 border-b border-gray-200 pb-2">2. Additional Information</h3>
+              
+              <div>
+                <Label className="text-sm font-semibold">Do you require a visa support letter?</Label>
+                <RadioGroup 
+                  value={participantForm.visaSupport} 
+                  onValueChange={(value) => handleParticipantFormChange('visaSupport', value)}
+                  className="mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="yes" id="visa-yes" />
+                    <Label htmlFor="visa-yes">Yes</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="visa-no" />
+                    <Label htmlFor="visa-no">No</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              
+              <div>
+                <Label className="text-sm font-semibold">Would you like to receive updates about future AfCFTA events?</Label>
+                <RadioGroup 
+                  value={participantForm.futureUpdates} 
+                  onValueChange={(value) => handleParticipantFormChange('futureUpdates', value)}
+                  className="mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="yes" id="updates-yes" />
+                    <Label htmlFor="updates-yes">Yes</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="updates-no" />
+                    <Label htmlFor="updates-no">No</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            </div>
+
+            {/* Consent */}
+            <div className="space-y-4">
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="consent"
+                  checked={participantForm.consent}
+                  onCheckedChange={(checked) => handleParticipantFormChange('consent', checked)}
+                  className="mt-1"
+                />
+                <Label htmlFor="consent" className="text-sm leading-relaxed">
+                  I agree for my details to be used for event coordination purposes only. *
+                </Label>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setParticipantModalOpen(false)}
+                className="px-6 rounded-none"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-orange-600 hover:bg-orange-700 text-white px-6 rounded-none"
+                disabled={!participantForm.consent}
+              >
+                Submit Registration
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Exhibitor Registration Modal */}
+      <Dialog open={exhibitorModalOpen} onOpenChange={setExhibitorModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white text-black rounded-none border-0">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black text-center mb-6">
+              Exhibitor Registration Form
+            </DialogTitle>
+          </DialogHeader>
+          
+          <form onSubmit={handleExhibitorSubmit} className="space-y-6">
+            {/* Organization Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-gray-800 border-b border-gray-200 pb-2">1. Organization Information</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="orgName" className="text-sm font-semibold">Organization/Company Name *</Label>
+                  <Input
+                    id="orgName"
+                    type="text"
+                    required
+                    value={exhibitorForm.organizationName}
+                    onChange={(e) => handleExhibitorFormChange('organizationName', e.target.value)}
+                    className="mt-1 rounded-none"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="contactPerson" className="text-sm font-semibold">Contact Person (Full Name) *</Label>
+                  <Input
+                    id="contactPerson"
+                    type="text"
+                    required
+                    value={exhibitorForm.contactPerson}
+                    onChange={(e) => handleExhibitorFormChange('contactPerson', e.target.value)}
+                    className="mt-1 rounded-none"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="exhibitorEmail" className="text-sm font-semibold">Email Address *</Label>
+                  <Input
+                    id="exhibitorEmail"
+                    type="email"
+                    required
+                    value={exhibitorForm.email}
+                    onChange={(e) => handleExhibitorFormChange('email', e.target.value)}
+                    className="mt-1 rounded-none"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="exhibitorPhone" className="text-sm font-semibold">Phone Number *</Label>
+                  <Input
+                    id="exhibitorPhone"
+                    type="tel"
+                    required
+                    value={exhibitorForm.phone}
+                    onChange={(e) => handleExhibitorFormChange('phone', e.target.value)}
+                    className="mt-1 rounded-none"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="exhibitorCountry" className="text-sm font-semibold">Country of Operation *</Label>
+                  <Select value={exhibitorForm.country} onValueChange={(value) => handleExhibitorFormChange('country', value)}>
+                    <SelectTrigger className="mt-1 rounded-none">
+                      <SelectValue placeholder="Select your country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {countries.map((country) => (
+                        <SelectItem key={country} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="website" className="text-sm font-semibold">Website/Social Media Handles</Label>
+                  <Input
+                    id="website"
+                    type="text"
+                    value={exhibitorForm.website}
+                    onChange={(e) => handleExhibitorFormChange('website', e.target.value)}
+                    className="mt-1 rounded-none"
+                    placeholder="e.g., www.company.com or @company"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Exhibition Details */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-gray-800 border-b border-gray-200 pb-2">2. Exhibition Details</h3>
+              
+              <div>
+                <Label htmlFor="aboutCompany" className="text-sm font-semibold">About your company</Label>
+                <Textarea
+                  id="aboutCompany"
+                  value={exhibitorForm.aboutCompany}
+                  onChange={(e) => handleExhibitorFormChange('aboutCompany', e.target.value)}
+                  className="mt-1 rounded-none"
+                  placeholder="Brief description of your company and what you do..."
+                  rows={3}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="productsServices" className="text-sm font-semibold">Type of Products/Services to Exhibit</Label>
+                <Textarea
+                  id="productsServices"
+                  value={exhibitorForm.productsServices}
+                  onChange={(e) => handleExhibitorFormChange('productsServices', e.target.value)}
+                  className="mt-1 rounded-none"
+                  placeholder="Describe the products or services you plan to showcase..."
+                  rows={3}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="category" className="text-sm font-semibold">Which category best describes you?</Label>
+                <Select value={exhibitorForm.category} onValueChange={(value) => handleExhibitorFormChange('category', value)}>
+                  <SelectTrigger className="mt-1 rounded-none">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="tourism-operator">Tourism Operator</SelectItem>
+                    <SelectItem value="creative-entrepreneur">Creative Entrepreneur</SelectItem>
+                    <SelectItem value="artist-performer">Artist/Performer</SelectItem>
+                    <SelectItem value="cultural-institution">Cultural Institution</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="boothNeeds" className="text-sm font-semibold">Booth/Display Needs</Label>
+                <Select value={exhibitorForm.boothNeeds} onValueChange={(value) => handleExhibitorFormChange('boothNeeds', value)}>
+                  <SelectTrigger className="mt-1 rounded-none">
+                    <SelectValue placeholder="Select booth requirements" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="table-only">Table only</SelectItem>
+                    <SelectItem value="booth-electricity">Booth with electricity</SelectItem>
+                    <SelectItem value="booth-av">Booth with AV equipment</SelectItem>
+                    <SelectItem value="other-specify">Other – specify</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="logoUpload" className="text-sm font-semibold">Upload Logo/Brand Materials</Label>
+                <Input
+                  id="logoUpload"
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={(e) => handleExhibitorFormChange('logoUpload', e.target.files?.[0])}
+                  className="mt-1 rounded-none"
+                />
+                <p className="text-xs text-gray-500 mt-1">Accepted formats: JPG, PNG, PDF (Max 5MB)</p>
+              </div>
+            </div>
+
+            {/* Logistics & Support */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-gray-800 border-b border-gray-200 pb-2">3. Logistics & Support</h3>
+              
+              <div>
+                <Label className="text-sm font-semibold">Will you need assistance with shipping/transportation of materials?</Label>
+                <RadioGroup 
+                  value={exhibitorForm.shippingAssistance} 
+                  onValueChange={(value) => handleExhibitorFormChange('shippingAssistance', value)}
+                  className="mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="yes" id="shipping-yes" />
+                    <Label htmlFor="shipping-yes">Yes</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="shipping-no" />
+                    <Label htmlFor="shipping-no">No</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              
+              <div>
+                <Label className="text-sm font-semibold">Will you need assistance with accommodation booking?</Label>
+                <RadioGroup 
+                  value={exhibitorForm.accommodationAssistance} 
+                  onValueChange={(value) => handleExhibitorFormChange('accommodationAssistance', value)}
+                  className="mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="yes" id="accommodation-yes" />
+                    <Label htmlFor="accommodation-yes">Yes</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="accommodation-no" />
+                    <Label htmlFor="accommodation-no">No</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              
+              <div>
+                <Label htmlFor="additionalAssistance" className="text-sm font-semibold">Any additional assistance required</Label>
+                <Textarea
+                  id="additionalAssistance"
+                  value={exhibitorForm.additionalAssistance}
+                  onChange={(e) => handleExhibitorFormChange('additionalAssistance', e.target.value)}
+                  className="mt-1 rounded-none"
+                  placeholder="Please specify any other assistance you may need..."
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            {/* Consent & Communication */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-gray-800 border-b border-gray-200 pb-2">4. Consent & Communication</h3>
+              
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="exhibitorConsent"
+                  checked={exhibitorForm.consent}
+                  onCheckedChange={(checked) => handleExhibitorFormChange('consent', checked)}
+                  className="mt-1"
+                />
+                <Label htmlFor="exhibitorConsent" className="text-sm leading-relaxed">
+                  I agree for my information to be shared with the AfCFTA Forum Organising Team for exhibition purposes. *
+                </Label>
+              </div>
+              
+              <div>
+                <Label className="text-sm font-semibold">Would you like to be included in the official exhibition handbook?</Label>
+                <RadioGroup 
+                  value={exhibitorForm.includeInHandbook} 
+                  onValueChange={(value) => handleExhibitorFormChange('includeInHandbook', value)}
+                  className="mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="yes" id="handbook-yes" />
+                    <Label htmlFor="handbook-yes">Yes</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="handbook-no" />
+                    <Label htmlFor="handbook-no">No</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setExhibitorModalOpen(false)}
+                className="px-6 rounded-none"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-6 rounded-none"
+                disabled={!exhibitorForm.consent}
+              >
+                Submit Registration
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Custom Toast Notifications */}
+      {showSuccessToast && (
+        <SuccessToast
+          title={toastMessage.title}
+          description={toastMessage.description}
+          onClose={() => setShowSuccessToast(false)}
+          duration={6000}
+        />
+      )}
+      
+      {showErrorToast && (
+        <ErrorToast
+          title={toastMessage.title}
+          description={toastMessage.description}
+          onClose={() => setShowErrorToast(false)}
+          duration={6000}
+        />
+      )}
     </div>
   )
 }
