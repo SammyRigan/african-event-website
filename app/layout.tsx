@@ -13,7 +13,13 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "Creative Connect Afrika - Festival & Forum 2025",
   description: "Unlocking Trade in Film, Music & Fashion under the AfCFTA Protocol on Trade in Services",
-    generator: 'v0.dev'
+  generator: 'v0.dev',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 }
 
 export default function RootLayout({
@@ -23,6 +29,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+        <meta name="theme-color" content="#000000" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      </head>
       <body className={`${poppins.variable} font-sans antialiased`}>
         {children}
         <Toaster />
