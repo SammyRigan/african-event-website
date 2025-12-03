@@ -1,0 +1,20 @@
+# Netlify redirects for Next.js static export
+# This file should be copied to the /out directory during build
+
+# Redirect all routes to their corresponding .html files
+/speakers /speakers.html 200
+/about /about.html 200
+/about/target-audience /about/target-audience.html 200
+/activities /activities.html 200
+/contact /contact.html 200
+/media /media.html 200
+/media/gallery /media/gallery.html 200
+/media/blog /media/blog.html 200
+/media/videos /media/videos.html 200
+/partners /partners.html 200
+/programme /programme.html 200
+/travel /travel.html 200
+
+# Catch-all for client-side routing (SPA fallback)
+/* /index.html 200
+

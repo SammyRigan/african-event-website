@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Poppins } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
+import { LanguageProvider } from "@/contexts/LanguageContext"
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -14,6 +15,9 @@ export const metadata: Metadata = {
   title: "Creative Connect Afrika - Festival & Forum 2025",
   description: "Unlocking Trade in Film, Music & Fashion under the AfCFTA Protocol on Trade in Services",
   generator: 'v0.dev',
+  icons: {
+    icon: "/logo.png",
+  },
   viewport: {
     width: 'device-width',
     initialScale: 1,
@@ -36,7 +40,9 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className={`${poppins.variable} font-sans antialiased`}>
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
         <Toaster />
       </body>
     </html>

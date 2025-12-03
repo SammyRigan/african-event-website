@@ -4,7 +4,12 @@
   "private": true,
   "scripts": {
     "build": "next build",
+    "build:public": "./build-public.sh",
     "dev": "next dev",
+    "dev:admin": "cd admin-app && next dev -p 3001",
+    "build:admin": "cd admin-app && next build",
+    "start:admin": "cd admin-app && next start -p 3001",
+    "deploy:admin": "cd admin-app && npm run build && cd .. && firebase deploy --only hosting",
     "lint": "next lint",
     "start": "next start"
   },

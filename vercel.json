@@ -1,0 +1,57 @@
+{
+  "rewrites": [
+    {
+      "source": "/speakers",
+      "destination": "/speakers.html"
+    },
+    {
+      "source": "/about",
+      "destination": "/about.html"
+    },
+    {
+      "source": "/about/target-audience",
+      "destination": "/about/target-audience.html"
+    },
+    {
+      "source": "/activities",
+      "destination": "/activities.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/contact.html"
+    },
+    {
+      "source": "/media",
+      "destination": "/media.html"
+    },
+    {
+      "source": "/media/gallery",
+      "destination": "/media/gallery.html"
+    },
+    {
+      "source": "/media/blog",
+      "destination": "/media/blog.html"
+    },
+    {
+      "source": "/media/videos",
+      "destination": "/media/videos.html"
+    },
+    {
+      "source": "/partners",
+      "destination": "/partners.html"
+    },
+    {
+      "source": "/programme",
+      "destination": "/programme.html"
+    },
+    {
+      "source": "/travel",
+      "destination": "/travel.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+

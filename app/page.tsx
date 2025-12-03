@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { Calendar, MapPin, Mail, Play, ArrowRight, Clock, ChevronDown, X, Menu } from "lucide-react"
+import { Calendar, MapPin, Mail, Play, ArrowRight, Clock, ChevronDown, Linkedin } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
@@ -14,25 +14,17 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { submitParticipantRegistration, submitExhibitorRegistration } from "@/lib/firebaseService"
+import { submitParticipantRegistration, submitExhibitorRegistration, sendParticipantConfirmationEmail, sendExhibitorConfirmationEmail } from "@/lib/firebaseService"
 import { SuccessToast, ErrorToast } from "@/components/ui/success-toast"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useLanguage } from "@/contexts/LanguageContext"
+import Header from "@/components/Header"
+import Footer from "@/components/Footer"
 
 export default function CreativeConnectAfricaLanding() {
   const isMobile = useIsMobile();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { language, setLanguage } = useLanguage();
   
-  // Close mobile menu when clicking outside or on navigation links
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (mobileMenuOpen && !(event.target as Element).closest('.mobile-menu')) {
-        setMobileMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [mobileMenuOpen]);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [toastMessage, setToastMessage] = useState({ title: '', description: '' });
@@ -43,8 +35,6 @@ export default function CreativeConnectAfricaLanding() {
     minutes: 0,
     seconds: 0
   });
-
-  const [language, setLanguage] = useState<'en' | 'fr'>('en');
   
   // Modal states
   const [participantModalOpen, setParticipantModalOpen] = useState(false);
@@ -123,9 +113,21 @@ export default function CreativeConnectAfricaLanding() {
       const result = await submitParticipantRegistration(participantForm);
       
       if (result.success) {
+        // Send confirmation email
+        try {
+          await sendParticipantConfirmationEmail({
+            ...participantForm,
+            timestamp: new Date()
+          });
+          console.log('Participant confirmation email sent successfully');
+        } catch (emailError) {
+          console.error('Error sending participant confirmation email:', emailError);
+          // Show warning but don't fail the registration
+        }
+        
         setToastMessage({
           title: "🎉 Registration Successful!",
-          description: "Thank you for registering for Creatives Connect Afrika Festival & Forum 2025. We've received your application and will be in touch soon with further details."
+          description: "Thank you for registering for Creatives Connect Afrika, happening from November 24 to 26, 2025! We invite you to bring along your friends, colleagues, and business associates, together, we can make an even greater impact. Don't miss this opportunity to be a part of something transformative. We can't wait to welcome you in Accra, Ghana!"
         });
         setShowSuccessToast(true);
         setParticipantModalOpen(false);
@@ -160,6 +162,18 @@ export default function CreativeConnectAfricaLanding() {
       const result = await submitExhibitorRegistration(exhibitorForm);
       
       if (result.success) {
+        // Send confirmation email
+        try {
+          await sendExhibitorConfirmationEmail({
+            ...exhibitorForm,
+            timestamp: new Date()
+          });
+          console.log('Exhibitor confirmation email sent successfully');
+        } catch (emailError) {
+          console.error('Error sending exhibitor confirmation email:', emailError);
+          // Show warning but don't fail the registration
+        }
+        
         setToastMessage({
           title: "🎉 Exhibitor Registration Successful!",
           description: "Thank you for registering as an exhibitor for Creatives Connect Afrika Festival & Forum 2025. Our team will review your application and contact you with exhibition details."
@@ -208,22 +222,23 @@ export default function CreativeConnectAfricaLanding() {
       },
       hero: {
         title: "Creatives Connect Afrika",
-        subtitle: "The AfCFTA Forum & Festival on Tourism, Creatives & Cultural Industries",
+        subtitle: "The AfCFTA Forum & Festival on Tourism, Creative & Cultural Industries",
         registerNow: "Register Now",
-        date: "25 – 28 NOVEMBER",
-        location: "ACCRA, GHANA"
+        date: "24 – 26 NOVEMBER",
+        location: "LA PALM ROYAL BEACH HOTEL, ACCRA, GHANA"
       },
       countdown: {
-        title: "COUNTDOWN TO EVENT",
+        title: "HAPPENING NOW",
+        happeningNow: "The event is currently taking place!",
         days: "DAYS",
         hours: "HOURS",
         minutes: "MINUTES",
         seconds: "SECONDS",
-        dateLocation: "November 25-28, 2025 • Accra, Ghana"
+        dateLocation: "November 24-26, 2025 • La Palm Royal Beach Hotel, Accra, Ghana"
       },
       about: {
         title: "ABOUT THE EVENT",
-        description: "Creatives Connect Afrika is the inaugural Festival & Forum designed to spotlight Africa's creative industries as catalysts for trade and continental integration. Hosted in Accra, Ghana from 25 – 28 November 2025, this groundbreaking event brings together, creatives investors, and industry leaders for dialogue, deal-making, and celebration."
+        description: "Creatives Connect Afrika is the inaugural Festival & Forum designed to spotlight Africa's creative industries as catalysts for trade and continental integration. Hosted in La Palm Royal Beach Hotel, Accra, Ghana from 24 – 26 November 2025, this groundbreaking event brings together, creatives investors, and industry leaders for dialogue, deal-making, and celebration."
       },
       activities: {
         title: "ACTIVITIES",
@@ -325,22 +340,23 @@ export default function CreativeConnectAfricaLanding() {
       },
       hero: {
         title: "Creatives Connect Afrika",
-        subtitle: "Le Forum et Festival AfCFTA sur le Tourisme, les Industries Créatives et Culturelles",
+        subtitle: "Le Forum et Festival AfCFTA sur le Tourisme, les Industries Créative et Culturelles",
         registerNow: "S'inscrire Maintenant",
-        date: "25 – 28 NOVEMBRE",
-        location: "ACCRA, GHANA"
+        date: "24 – 26 NOVEMBRE",
+        location: "LA PALM ROYAL BEACH HOTEL, ACCRA, GHANA"
       },
       countdown: {
-        title: "COMPTE À REBOURS VERS L'ÉVÉNEMENT",
+        title: "EN COURS",
+        happeningNow: "L'événement se déroule actuellement!",
         days: "JOURS",
         hours: "HEURES",
         minutes: "MINUTES",
         seconds: "SECONDES",
-        dateLocation: "25-28 novembre 2025 • Accra, Ghana"
+        dateLocation: "24-26 novembre 2025 • La Palm Royal Beach Hotel, Accra, Ghana"
       },
       about: {
         title: "À PROPOS DE L'ÉVÉNEMENT",
-        description: "Creatives Connect Afrika est le Festival et Forum inaugural conçu pour mettre en lumière les industries créatives africaines comme catalyseurs du commerce et de l'intégration continentale. Organisé à Accra, Ghana du 25 au 28 novembre 2025, cet événement révolutionnaire réunit créateurs, investisseurs et leaders de l'industrie pour le dialogue, la conclusion d'accords et la célébration."
+        description: "Creatives Connect Afrika est le Festival et Forum inaugural conçu pour mettre en lumière les industries créatives africaines comme catalyseurs du commerce et de l'intégration continentale. Organisé à La Palm Royal Beach Hotel, Accra, Ghana du 24 au 26 novembre 2025, cet événement révolutionnaire réunit créateurs, investisseurs et leaders de l'industrie pour le dialogue, la conclusion d'accords et la célébration."
       },
       activities: {
         title: "ACTIVITÉS",
@@ -436,7 +452,7 @@ export default function CreativeConnectAfricaLanding() {
   const t = translations[language as keyof typeof translations];
 
   useEffect(() => {
-    const eventDate = new Date('November 25, 2025 09:00:00').getTime();
+    const eventDate = new Date('November 24, 2025 09:00:00').getTime();
     
     const timer = setInterval(() => {
       const now = new Date().getTime();
@@ -457,195 +473,7 @@ export default function CreativeConnectAfricaLanding() {
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden scroll-smooth">
-      {/* Header */}
-      <header className="absolute top-0 w-full z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Image
-                src="/logo.png"
-                alt="Creatives Connect Afrika Logo"
-                width={isMobile ? 100 : 180}
-                height={isMobile ? 24 : 40}
-                className="rounded-none"
-              />
-            </div>
-            
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-6">
-              <nav className="flex items-center space-x-6 text-sm font-medium">
-                <Link href="#about" className="text-gray-300 hover:text-white transition-colors">
-                  {t.nav.about}
-                </Link>
-                <Link href="#register" className="text-gray-300 hover:text-white transition-colors">
-                  {t.nav.register}
-                </Link>
-                <Link href="#act-grid" className="text-gray-300 hover:text-white transition-colors">
-                  {t.nav.activities}
-                </Link>
-                <Link href="#media" className="text-gray-300 hover:text-white transition-colors">
-                  {t.nav.media}
-                </Link>
-                <Link href="#partners" className="text-gray-300 hover:text-white transition-colors">
-                  {t.nav.partners}
-                </Link>
-                <Link href="#contact" className="text-gray-300 hover:text-white transition-colors">
-                  {t.nav.contact}
-                </Link>
-              </nav>
-            </div>
-            
-            <div className="flex items-center space-x-4 md:space-x-6">
-              {/* Language Selector - Desktop */}
-              <div className="hidden md:flex items-center space-x-4 text-gray-300 text-sm">
-                <span 
-                  className={`cursor-pointer transition-colors ${language === 'en' ? 'text-white' : 'hover:text-white'}`}
-                  onClick={() => setLanguage('en')}
-                >
-                  EN
-                </span>
-                <span className="text-gray-500">|</span>
-                <span 
-                  className={`cursor-pointer transition-colors ${language === 'fr' ? 'text-white' : 'hover:text-white'}`}
-                  onClick={() => setLanguage('fr')}
-                >
-                  FR
-                </span>
-              </div>
-              
-              {/* Register Button - Desktop */}
-              <Button className="hidden md:block bg-[#E19D2B] hover:bg-[#D18A1A] text-white px-6 py-2 font-semibold rounded-none">
-                <Link href="#register">
-                  {t.hero.registerNow}
-                </Link>
-              </Button>
-              
-              {/* Mobile Menu Button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mobile-menu md:hidden text-white hover:bg-white/10 p-2"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </Button>
-            </div>
-          </div>
-          
-          {/* Mobile Menu */}
-          {mobileMenuOpen && (
-            <div className="mobile-menu md:hidden mt-4 bg-black/95 backdrop-blur-sm border border-white/20 rounded-lg p-4">
-              <nav className="flex flex-col space-y-4 text-sm font-medium">
-                <Link 
-                  href="#about" 
-                  className="text-gray-300 hover:text-white transition-colors py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t.nav.about}
-                </Link>
-                <Link 
-                  href="#register" 
-                  className="text-gray-300 hover:text-white transition-colors py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t.nav.register}
-                </Link>
-                <Link 
-                  href="#act-grid" 
-                  className="text-gray-300 hover:text-white transition-colors py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t.nav.activities}
-                </Link>
-                <Link 
-                  href="#media" 
-                  className="text-gray-300 hover:text-white transition-colors py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t.nav.media}
-                </Link>
-                <Link 
-                  href="#partners" 
-                  className="text-gray-300 hover:text-white transition-colors py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t.nav.partners}
-                </Link>
-                <Link 
-                  href="#contact" 
-                  className="text-gray-300 hover:text-white transition-colors py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {t.nav.contact}
-                </Link>
-                
-                {/* Language Selector - Mobile */}
-                <div className="flex items-center space-x-4 text-gray-300 text-sm pt-2 border-t border-white/20">
-                  <span 
-                    className={`cursor-pointer transition-colors ${language === 'en' ? 'text-white' : 'hover:text-white'}`}
-                    onClick={() => setLanguage('en')}
-                  >
-                    EN
-                  </span>
-                  <span className="text-gray-500">|</span>
-                  <span 
-                    className={`cursor-pointer transition-colors ${language === 'fr' ? 'text-white' : 'hover:text-white'}`}
-                    onClick={() => setLanguage('fr')}
-                  >
-                    FR
-                  </span>
-                </div>
-                
-                {/* Register Button - Mobile */}
-                <Button className="w-full bg-[#E19D2B] hover:bg-[#D18A1A] text-white py-3 font-semibold rounded-none mt-4">
-                  <Link href="#register" onClick={() => setMobileMenuOpen(false)}>
-                    {t.hero.registerNow}
-                  </Link>
-                </Button>
-                
-                {/* Social Media - Mobile Only */}
-                <div className="flex justify-center space-x-4 pt-4 border-t border-white/20 mt-4">
-                  <Link 
-                    href="https://twitter.com/creativeconnectafrica" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                    </svg>
-                  </Link>
-                  
-                  <Link 
-                    href="https://facebook.com/creativeconnectafrica" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                  </Link>
-                  
-                  <Link 
-                    href="https://instagram.com/creativeconnectafrica" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                    </svg>
-                  </Link>
-                </div>
-              </nav>
-            </div>
-          )}
-        </div>
-      </header>
+      <Header language={language} setLanguage={setLanguage} currentPage="home" />
 
       {/* Hero Section with Video Background */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -668,7 +496,7 @@ export default function CreativeConnectAfricaLanding() {
             className="w-full h-full object-cover absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 min-w-full min-h-full pointer-events-none"
             title="Creatives Connect Afrika Background Video"
           ></iframe>
-          <div className="absolute inset-0 bg-[#2A8E44]/70"></div>
+          <div className="absolute inset-0 bg-green-950/80"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/70"></div>
         </div>
 
@@ -676,7 +504,7 @@ export default function CreativeConnectAfricaLanding() {
         <div className="container mx-auto px-4 relative z-10 text-center">
           <div className="max-w-6xl mx-auto">
 
-            <div className="flex flex-row justify-center items-center gap-4 md:gap-6 max-w-3xl mx-auto mb-4 md:mb-5">
+            <div className="flex flex-row justify-center items-center gap-4 md:gap-6 max-w-3xl mx-auto mb-3 md:mb-4">
               <Image
                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Coat_of_arms_of_Ghana.svg/800px-Coat_of_arms_of_Ghana.svg.png"
                 alt="Ghana Coat of Arms"
@@ -694,26 +522,26 @@ export default function CreativeConnectAfricaLanding() {
             </div>
 
             {/* Event Details - No Box */}
-            <div className="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-6 max-w-3xl mx-auto mb-4 md:mb-5">
+            <div className="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-6 max-w-3xl mx-auto mb-3 md:mb-4">
               <div className="flex items-center gap-3 text-white">
                 <div>
-                  <p className="text-sm md:text-xl font-bold font-heading">THE GOVERNMENT OF GHANA IN PARTNERSHIP WITH AfCFTA PRESENTS</p>
+                  <p className="text-sm md:text-xl font-bold font-heading">AfCFTA SECRETARIAT IN PARTNERSHIP WITH THE GOVERNMENT OF GHANA AND AFRICA TOURISM PARTNERS PRESENT</p>
                 </div>
               </div>
             </div>
 
             {/* Main Title */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black mb-4 md:mb-6 leading-tight font-heading">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black mb-3 md:mb-4 leading-tight font-heading">
               <span className="block text-white">
                 CREATIVES <span className="block text-[#E19D2B] inline">CONNECT</span> AFRIKA</span>
             </h1>
 
             {/* Subtitle */}
-            <div className="mb-6 md:mb-8">
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-gray-200 mb-4 font-heading max-w-2xl mx-auto">{t.hero.subtitle}</p>
+            <div className="mb-4 md:mb-6">
+              <p className="text-lg sm:text-xl md:text-2xl font-bold text-gray-200 mb-3 font-heading max-w-2xl mx-auto">{t.hero.subtitle}</p>
             </div>
 
-            <div className="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-6 max-w-3xl mx-auto mb-4 md:mb-5">
+            <div className="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-6 max-w-3xl mx-auto mb-3 md:mb-4">
               <div className="flex items-center gap-3 text-white">
                 <div>
                   <p className="text-lg md:text-xl font-bold font-heading">{t.hero.date}</p>
@@ -733,18 +561,7 @@ export default function CreativeConnectAfricaLanding() {
             {/* Social Media - Desktop Only */}
             <div className="hidden md:flex justify-center space-x-6 mb-8">
               <Link 
-                href="https://twitter.com/creativeconnectafrica" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
-              >
-                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                </svg>
-              </Link>
-              
-              <Link 
-                href="https://facebook.com/creativeconnectafrica" 
+                href="https://www.facebook.com/share/1YkKMwaJsT/" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
@@ -755,7 +572,29 @@ export default function CreativeConnectAfricaLanding() {
               </Link>
               
               <Link 
-                href="https://instagram.com/creativeconnectafrica" 
+                href="https://x.com/CreativesAfrika" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+              >
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                </svg>
+              </Link>
+              
+              <Link 
+                href="https://www.linkedin.com/company/creatives-connect-afrika/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+              >
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+              </Link>
+              
+              <Link 
+                href="https://www.instagram.com/creativesconnectafrika" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
@@ -764,6 +603,40 @@ export default function CreativeConnectAfricaLanding() {
                   <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                 </svg>
               </Link>
+              <Link 
+                href="https://vm.tiktok.com/ZMA6Dersg/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
+              >
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+                </svg>
+              </Link>
+            </div>
+
+            <div className="flex justify-center items-center gap-4 md:gap-6 max-w-3xl mx-auto mb-4 md:mb-5">
+            <Image
+                      src="/ATP.png"
+                      alt="Africa Tourism Partners Logo"
+                      width={48}
+                      height={48}
+                      className="w-28 h-auto object-contain"
+                    />
+            <Image
+                src="https://blackstarexperience.org/wp-content/uploads/2025/04/TBSE-logo-04.png"
+                alt="Black Star Experience Logo"
+                width={48}
+                height={48}
+                className="w-40 h-auto object-contain"
+              />
+              <Image
+                  src="/GG_EU Combo.png"
+                  alt="Government of Ghana & European Union"
+                  width={48}
+                  height={48}
+                  className="w-40 h-auto object-contain"
+                />
             </div>
 
           </div>
@@ -775,83 +648,24 @@ export default function CreativeConnectAfricaLanding() {
         </div>
       </section>
 
-      {/* Countdown Section */}
-      <section className="py-12 md:py-16 bg-black text-white relative">
+      {/* Happening Now Section */}
+      <section className="py-8 md:py-12 bg-black text-white relative">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-8 md:mb-12">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-black mb-4 leading-tight font-heading">{t.countdown.title}</h2>
+          <div className="text-center mb-6 md:mb-8">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-black mb-3 leading-tight font-heading">{t.countdown.title}</h2>
+            <p className="text-lg md:text-xl text-[#E19D2B] font-bold mb-2">{t.countdown.happeningNow}</p>
             <p className="text-lg md:text-xl text-gray-300 font-medium">{t.countdown.dateLocation}</p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 max-w-4xl mx-auto">
-            {[
-              { label: t.countdown.days, value: countdown.days },
-              { label: t.countdown.hours, value: countdown.hours },
-              { label: t.countdown.minutes, value: countdown.minutes },
-              { label: t.countdown.seconds, value: countdown.seconds }
-            ].map((item, index) => (
-              <div key={index} className="text-center">
-                <div className="border border-white/15 rounded-none p-3 md:p-6 mb-2 md:mb-4">
-                  <div className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-black text-[#E19D2B] mb-1 md:mb-2">{item.value}</div>
-                  <div className="text-xs md:text-sm font-bold text-gray-300">{item.label}</div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
       {/* About Section with Images */}
-      <section id="about" className="py-12 md:py-20 bg-black text-white relative">
+      <section id="about" className="py-8 md:py-12 bg-black text-white relative">
         <div className="container mx-auto px-4 md:px-5">
           <div className="max-w-5xl mx-auto">
             {/* new section here */}
-            <div className="text-center py-6 md:py-11">
+            <div className="text-center py-4 md:py-6">
               <p className="font-medium text-lg sm:text-xl md:text-2xl lg:text-4xl text-gray-300">{t.about.description}</p>
-            </div>
-
-
-            <div className="grid lg:grid-cols-2 gap-16 items-center hidden">
-              <div>
-                <h2 className="text-5xl lg:text-7xl font-black mb-8 leading-tight font-heading">
-                  {t.activities.title}
-                </h2>
-                <div className="space-y-6 text-lg leading-relaxed">
-                  <p className="text-xl font-bold text-gray-200">
-                    Creatives Connect Afrika 2025 is the inaugural Festival & Forum designed to spotlight Africa's
-                    creative industries as catalysts for trade and continental integration.
-                  </p>
-                  <p className="font-medium text-gray-300">
-                    Hosted in Accra, Ghana from 25 – 28 November 2025, this groundbreaking event brings together
-                    policymakers, creatives, investors, and industry leaders for dialogue, deal-making, and celebration.
-                  </p>
-                </div>
-              </div>
-              <div className="relative">
-                <Image
-                  src="/placeholder.svg?height=500&width=600"
-                  alt="Creatives Connect Afrika Event"
-                  width={600}
-                  height={500}
-                  className="rounded-none shadow-2xl"
-                />
-                <div className="absolute -bottom-6 -right-6 bg-gray-900/80 rounded-none p-8 max-w-sm border border-white/20">
-                  <h3 className="text-2xl font-black mb-6 font-heading text-white">A PLATFORM FOR:</h3>
-                  <div className="space-y-4">
-                    {[
-                      "Advancing policy frameworks for creative services",
-                      "Enabling cross-border partnerships and co-productions",
-                      "Elevating Africa's global narrative through creativity",
-                      "Showcasing cultural heritage and innovation",
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-start space-x-3">
-                        <div className="w-3 h-3 bg-[#2A8E44] rounded-none mt-2 flex-shrink-0"></div>
-                        <p className="font-semibold text-sm text-gray-200">{item}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -864,21 +678,21 @@ export default function CreativeConnectAfricaLanding() {
       </section>
 
       {/* Registration Section */}
-      <section id="register" className="py-16 md:py-36 bg-black text-white relative">
+      <section id="register" className="py-12 md:py-20 bg-black text-white relative">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-center">
+            <div className="grid lg:grid-cols-2 gap-6 md:gap-12 items-center">
               {/* Left Content Panel */}
-              <div className="space-y-6 md:space-y-8">
+              <div className="space-y-4 md:space-y-6">
                 <div>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-4 md:mb-6 leading-tight font-heading">{t.register.title}</h2>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-3 md:mb-4 leading-tight font-heading">{t.register.title}</h2>
                   <p className="text-base md:text-lg text-gray-300 font-medium leading-relaxed">
                     {t.register.description}
                   </p>
                 </div>
 
                 {/* Call to Action Buttons */}
-                <div className="space-y-4 md:space-y-6">
+                <div className="space-y-3 md:space-y-4">
                   <Button 
                     onClick={() => setParticipantModalOpen(true)}
                     className="w-full bg-[#E19D2B] hover:bg-[#D18A1A] text-white px-6 md:px-8 h-12 md:h-16 text-base md:text-lg font-bold rounded-none"
@@ -927,11 +741,11 @@ export default function CreativeConnectAfricaLanding() {
       </section>
 
       {/* Image Grid Section */}
-      <section id="act-grid" className="bg-white pt-20 md:pt-36 relative">
+      <section id="act-grid" className="bg-white pt-12 md:pt-20 relative">
         <div className="">
           <div className="mx-auto">
-            <div className="container grid max-w-6xl lg:grid-cols-2 gap-8 md:gap-12 items-center mb-8 md:mb-16">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-black mb-4 md:mb-6 leading-tight font-heading">
+            <div className="container grid max-w-6xl lg:grid-cols-2 gap-6 md:gap-8 items-center mb-6 md:mb-10">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-black mb-3 md:mb-4 leading-tight font-heading">
                 {t.imageGrid.title}
               </h2>
               <p className="text-base md:text-lg leading-relaxed font-medium text-gray-600">
@@ -979,101 +793,15 @@ export default function CreativeConnectAfricaLanding() {
         </div>
       </section>
 
-      {/* Activities Section */}
-      <section id="activities" className="py-20 bg-white text-black relative hidden">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl lg:text-7xl font-black mb-6 leading-tight font-heading">
-              {t.activities.title}
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto font-medium">
-              {t.activities.subtitle}
-            </p>
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Fashion Activity */}
-            <Card className="group bg-white border-2 border-gray-200 hover:border-[#E19D2B] transition-all duration-300 overflow-hidden rounded-none">
-              <CardContent className="p-0">
-                <div className="relative">
-                  <Image
-                    src="https://indepthnews.net/wp-content/uploads/2018/12/mandela100_crowd-1.jpg"
-                    alt="African Fashion"
-                    width={400}
-                    height={300}
-                    className="w-full h-64 object-cover rounded-none"
-                  />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
-                <div className="p-8">
-                  <h3 className="text-3xl font-black mb-4 font-heading">{t.activities.fashion.title}</h3>
-                  <p className="text-gray-600 mb-6 font-medium">
-                    {t.activities.fashion.description}
-                  </p>
-                  <Button className="bg-[#E19D2B] hover:bg-[#D18A1A] text-white px-6 py-3 font-bold rounded-none w-full">{t.activities.fashion.button}</Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Music Activity */}
-            <Card className="group bg-white border-2 border-gray-200 hover:border-[#E91F28] transition-all duration-300 overflow-hidden rounded-none">
-              <CardContent className="p-0">
-                <div className="relative">
-                  <Image
-                    src="https://www.gcbbank.com.gh/images/news/2019/GCB-Sponsors-SWIFT-African-Regional-Conference-.jpeg"
-                    alt="African Music"
-                    width={400}
-                    height={300}
-                    className="w-full h-64 object-cover rounded-none"
-                  />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
-                <div className="p-8">
-                  <h3 className="text-3xl font-black mb-4 font-heading">{t.activities.music.title}</h3>
-                  <p className="text-gray-600 mb-6 font-medium">
-                    {t.activities.music.description}
-                  </p>
-                  <Button className="bg-[#E91F28] hover:bg-[#D10F1F] text-white px-6 py-3 font-bold rounded-none w-full">{t.activities.music.button}</Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Film Activity */}
-            <Card className="group bg-white border-2 border-gray-200 hover:border-[#2A8E44] transition-all duration-300 overflow-hidden rounded-none">
-              <CardContent className="p-0">
-                <div className="relative">
-                  <Image
-                    src="https://i0.wp.com/efsinc.org/wp-content/uploads/2019/01/50917005_614548135653353_3170554388439629824_o.jpg"
-                    alt="African Film"
-                    width={400}
-                    height={300}
-                    className="w-full h-64 object-cover rounded-none"
-                  />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </div>
-                <div className="p-8">
-                  <h3 className="text-3xl font-black mb-4 font-heading">{t.activities.film.title}</h3>
-                  <p className="text-gray-600 mb-6 font-medium">
-                    {t.activities.film.description}
-                  </p>
-                  <Button className="bg-[#2A8E44] hover:bg-[#1A7E34] text-white px-6 py-3 font-bold rounded-none w-full">{t.activities.film.button}</Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-
       {/* Partners Section */}
-      <section id="partners" className="py-12 md:py-20 bg-white text-black relative">
+      <section id="partners" className="py-10 md:py-16 bg-white text-black relative">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-8 md:gap-16 items-center">
+            <div className="grid lg:grid-cols-2 gap-6 md:gap-12 items-center">
               {/* Left Column - Text Content */}
-              <div className="space-y-6 md:space-y-8">
+              <div className="space-y-4 md:space-y-6">
                 <div>
-                  <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-4 md:mb-6 leading-tight font-heading">
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black mb-3 md:mb-4 leading-tight font-heading">
                     {t.partners.title}
                   </h2>
                   <p className="text-base md:text-lg text-gray-600 leading-relaxed font-medium">
@@ -1153,15 +881,15 @@ export default function CreativeConnectAfricaLanding() {
       </section>
 
       {/* Three Pillars Section */}
-      <section id="pillars" className="bg-gray-200 text-black py-16 md:py-36">
+      <section id="pillars" className="bg-gray-200 text-black py-12 md:py-20">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-1 leading-tight font-heading">
             {t.pillars.title}
           </h2>
-          <p className="mb-6 md:mb-11 text-sm md:text-base">{t.pillars.subtitle}</p>
+          <p className="mb-4 md:mb-6 text-sm md:text-base">{t.pillars.subtitle}</p>
 
           <div className="grid">
-            <div className="flex flex-col md:flex-row gap-4 px-8 py-6 md:py-11 border-t border-t-gray-300">
+            <div className="flex flex-col md:flex-row gap-4 px-8 py-4 md:py-6 border-t border-t-gray-300">
               <div className="w-full md:w-1/5">
                 <h2 className="text-4xl md:text-6xl text-[#E19D2B]">01</h2>
               </div>
@@ -1173,7 +901,7 @@ export default function CreativeConnectAfricaLanding() {
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-4 px-8 py-6 md:py-11 border-t border-t-gray-300">
+            <div className="flex flex-col md:flex-row gap-4 px-8 py-4 md:py-6 border-t border-t-gray-300">
               <div className="w-full md:w-1/5">
                 <h2 className="text-4xl md:text-6xl text-[#E91F28]">02</h2>
               </div>
@@ -1185,7 +913,7 @@ export default function CreativeConnectAfricaLanding() {
               </div>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-4 px-8 py-6 md:py-11 border-y border-y-gray-300">
+            <div className="flex flex-col md:flex-row gap-4 px-8 py-4 md:py-6 border-y border-y-gray-300">
               <div className="w-full md:w-1/5">
                 <h2 className="text-4xl md:text-6xl text-[#2A8E44]">03</h2>
               </div>
@@ -1200,458 +928,7 @@ export default function CreativeConnectAfricaLanding() {
         </div>
       </section>
 
-
-      {/* Contact Section */}
-      <section id="contact" className="py-20 bg-gray-900 text-white relative hidden">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl lg:text-6xl font-black mb-8 leading-tight font-heading">
-              {t.contact.title}
-            </h2>
-            <p className="text-xl text-gray-300 mb-12 font-medium">
-              {t.contact.subtitle}
-            </p>
-            
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="bg-black/50 border border-white/20 rounded-none p-8">
-                <Mail className="w-12 h-12 text-[#E19D2B] mx-auto mb-4" />
-                <h3 className="text-2xl font-bold mb-4">{t.contact.email.title}</h3>
-                <p className="text-gray-300 mb-4">{t.contact.email.description}</p>
-                <Link 
-                  href="mailto:info@creativeconnectAfrica.com"
-                  className="text-[#E19D2B] hover:text-white transition-colors font-semibold text-lg"
-                >
-                  info@creativeconnectAfrica.com
-                </Link>
-              </div>
-              
-              <div className="bg-black/50 border border-white/20 rounded-none p-8">
-                <div className="w-12 h-12 bg-[#E19D2B] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white font-bold">📞</span>
-                </div>
-                <h3 className="text-2xl font-bold mb-4">{t.contact.phone.title}</h3>
-                <p className="text-gray-300 mb-4">{t.contact.phone.description}</p>
-                <Link 
-                  href="tel:+233244123456"
-                  className="text-[#E19D2B] hover:text-white transition-colors font-semibold text-lg"
-                >
-                  +233 24 412 3456
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Film Pillar Section */}
-      <section id="film" className="py-20 bg-gradient-to-br from-black to-[#E91F28] text-white hidden">
-        <div className="container mx-auto px-4">
-
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="relative rounded-none overflow-hidden shadow-2xl">
-              <Image
-                src="/placeholder.svg?height=450&width=800"
-                alt="African Film Festival"
-                width={800}
-                height={450}
-                className="w-full h-auto object-cover rounded-none"
-              />
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <Button
-                  variant="secondary"
-                  className="bg-white text-[#E91F28] hover:bg-gray-100 px-8 py-4 text-lg font-bold rounded-none"
-                >
-                  <Play className="w-6 h-6 mr-3" />
-                  WATCH HIGHLIGHTS
-                </Button>
-              </div>
-            </div>
-            <div className="space-y-6">
-            <h2 className="text-5xl lg:text-7xl font-black text-white mb-6 leading-tight font-heading">
-              {t.pillars.film.title}
-            </h2>
-              <p className="text-lg leading-relaxed font-medium text-gray-300">
-                The African film industry is a powerhouse of storytelling. Creatives Connect Afrika provides a platform
-                for filmmakers to showcase their work, engage in co-production deals, and discuss the future of African
-                cinema.
-              </p>
-              <p className="text-lg leading-relaxed font-medium text-gray-300">
-                Explore masterclasses on screenwriting, directing, and distribution. Witness exclusive film screenings
-                and network with industry leaders elevating Africa's global image through compelling visual narratives.
-              </p>
-              <Button
-                variant="outline"
-                className="border-2 border-white text-white hover:bg-white hover:text-black px-8 py-4 text-lg font-bold rounded-none transition-all bg-transparent"
-              >
-                EXPLORE FILM TRACK <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Music Pillar Section */}
-      <section id="music" className="py-20 bg-black text-white hidden">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl lg:text-7xl font-black text-white mb-6 leading-tight font-heading">
-              {t.pillars.music.title}
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto font-medium">
-              From Afrobeats to traditional rhythms, showcasing the sounds that have captivated the world.
-            </p>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6 order-2 lg:order-1">
-              <p className="text-lg leading-relaxed font-medium text-gray-300">
-                African music has transcended borders, becoming a dominant force in global culture. Creatives Connect
-                Africa celebrates this, bringing together artists, producers, and executives to explore the business of
-                music and cross-continental collaborations.
-              </p>
-              <p className="text-lg leading-relaxed font-medium text-gray-300">
-                Experience electrifying live performances and participate in workshops on music production and digital
-                distribution. Connect with the rhythm and soul of Africa's thriving music industry.
-              </p>
-              <Button
-                variant="outline"
-                className="border-2 border-white text-white hover:bg-white hover:text-black px-8 py-4 text-lg font-bold rounded-none transition-all bg-transparent"
-              >
-                EXPLORE MUSIC TRACK <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </div>
-            <div className="relative rounded-none overflow-hidden shadow-2xl order-1 lg:order-2">
-              <Image
-                src="/placeholder.svg?height=450&width=800"
-                alt="Afrobeats Concert"
-                width={800}
-                height={450}
-                className="w-full h-auto object-cover rounded-none"
-              />
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <Button
-                  variant="secondary"
-                  className="bg-white text-[#E91F28] hover:bg-gray-100 px-8 py-4 text-lg font-bold rounded-none"
-                >
-                  <Play className="w-6 h-6 mr-3" />
-                  SEE LIVE PERFORMANCES
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Fashion Pillar Section */}
-      <section id="fashion" className="py-20 bg-gradient-to-br from-black to-[#2A8E44] text-white hidden">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl lg:text-7xl font-black text-white mb-6 leading-tight font-heading">
-              {t.pillars.fashion.title}
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto font-medium">
-              Highlighting designers who fuse traditional African aesthetics with contemporary style, influencing global
-              trends.
-            </p>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="relative rounded-none overflow-hidden shadow-2xl">
-              <Image
-                src="/placeholder.svg?height=450&width=800"
-                alt="African Fashion Runway"
-                width={800}
-                height={450}
-                className="w-full h-auto object-cover rounded-none"
-              />
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <Button
-                  variant="secondary"
-                  className="bg-white text-[#2A8E44] hover:bg-gray-100 px-8 py-4 text-lg font-bold rounded-none"
-                >
-                  <Play className="w-6 h-6 mr-3" />
-                  VIEW SHOWCASES
-                </Button>
-              </div>
-            </div>
-            <div className="space-y-6">
-              <p className="text-lg leading-relaxed font-medium text-gray-300">
-                African fashion is a vibrant tapestry of tradition and innovation. Creatives Connect Afrika provides a
-                platform for designers, models, and textile artists to showcase collections and forge partnerships.
-              </p>
-              <p className="text-lg leading-relaxed font-medium text-gray-300">
-                African fashion blends tradition and innovation, with designers, models, and textile artists showcasing collections, forging partnerships, and driving conversations on sustainability, ethical production, and market growth. </p>
-              <Button
-                variant="outline"
-                className="border-2 border-white text-white hover:bg-white hover:text-black px-8 py-4 text-lg font-bold rounded-none transition-all bg-transparent"
-              >
-                EXPLORE FASHION TRACK <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Speakers/Lineup */}
-      <section id="lineup" className="py-20 bg-gradient-to-br from-black to-[#E91F28] hidden">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl lg:text-7xl font-black text-white mb-6 leading-tight font-heading">
-              FEATURED <span className="text-[#E19D2B]">LINEUP</span>
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto font-medium">
-              Industry leaders, visionaries, and cultural icons shaping Africa's creative future
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-            {[
-              {
-                name: "Amara Okafor",
-                title: "Film Director & Producer",
-                category: "Film",
-                image: "african woman film director with camera equipment professional portrait",
-                color: "bg-[#E91F28]",
-              },
-              {
-                name: "Kwame Asante",
-                title: "Grammy-Winning Producer",
-                category: "Music",
-                image: "african man music producer in recording studio professional portrait",
-                color: "bg-[#E91F28]",
-              },
-              {
-                name: "Zara Mensah",
-                title: "Fashion Designer",
-                category: "Fashion",
-                image: "african woman fashion designer with colorful fabrics professional portrait",
-                color: "bg-[#2A8E44]",
-              },
-              {
-                name: "Dr. Kofi Adjei",
-                title: "AfCFTA Trade Expert",
-                category: "Policy",
-                image: "african man economist in professional setting business portrait",
-                color: "bg-[#E19D2B]",
-              },
-            ].map((speaker, index) => (
-              <Card
-                key={index}
-                className="group bg-white/10 border-white/20 hover:bg-white/20 transition-all duration-300 overflow-hidden rounded-none"
-              >
-                <CardContent className="p-0">
-                  <div className="relative">
-                    <Image
-                      src={`/placeholder.svg?height=300&width=250&query=${speaker.image}`}
-                      alt={speaker.name}
-                      width={250}
-                      height={300}
-                      className="w-full h-64 object-cover rounded-none"
-                    />
-                    <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                      <Button
-                        variant="secondary"
-                        className="bg-white text-black hover:bg-gray-100 font-bold rounded-none w-full"
-                      >
-                        VIEW PROFILE
-                      </Button>
-                    </div>
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <Badge className={`${speaker.color} text-white mb-2 rounded-none`}>{speaker.category}</Badge>
-                      <h3 className="text-xl font-bold text-white mb-1 font-heading">{speaker.name}</h3>
-                      <p className="text-gray-300 text-sm font-medium">{speaker.title}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="text-center">
-            <Button
-              variant="outline"
-              className="border-2 border-white text-white hover:bg-white hover:text-black px-8 py-4 text-lg font-bold rounded-none bg-transparent"
-            >
-              VIEW FULL LINEUP <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Program Schedule */}
-      <section id="program" className="py-20 bg-black text-white hidden">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl lg:text-7xl font-black text-white mb-6 leading-tight font-heading">
-              EVENT <span className="text-[#E91F28]">PROGRAM</span>
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto font-medium">
-              Three days of forums, festivals, and networking opportunities
-            </p>
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-8">
-            {[
-              {
-                day: "DAY 1",
-                date: "November 25",
-                title: "FORUM OPENING",
-                highlights: ["Opening Ceremony", "Policy Keynotes", "Trade Discussions", "Welcome Reception"],
-                color: "bg-[#E91F28]",
-              },
-              {
-                day: "DAY 2",
-                date: "November 26",
-                title: "FESTIVAL SHOWCASE",
-                highlights: ["Film Screenings", "Music Performances", "Fashion Shows", "Cultural Exhibitions"],
-                color: "bg-[#E19D2B]",
-              },
-              {
-                day: "DAY 3",
-                date: "November 27",
-                title: "COLLABORATION",
-                highlights: ["Masterclasses", "Business Matchmaking", "Partnership Signings", "Closing Gala"],
-                color: "bg-[#2A8E44]",
-              },
-            ].map((day, index) => (
-              <Card
-                key={index}
-                className="group bg-gray-900/80 border border-white/20 hover:shadow-2xl transition-all duration-300 overflow-hidden rounded-none"
-              >
-                <CardContent className="p-0">
-                  <div className={`${day.color} text-white p-8 rounded-none`}>
-                    <div className="text-center mb-6">
-                      <p className="text-sm font-bold opacity-80">{day.day}</p>
-                      <h3 className="text-3xl font-black font-heading">{day.date}</h3>
-                      <p className="text-xl font-bold mt-2 font-heading">{day.title}</p>
-                    </div>
-                  </div>
-                  <div className="p-8">
-                    <h4 className="text-lg font-bold mb-4 font-heading text-white">Key Highlights:</h4>
-                    <ul className="space-y-3">
-                      {day.highlights.map((highlight, idx) => (
-                        <li key={idx} className="flex items-center space-x-3">
-                          <Clock className="w-4 h-4 text-gray-400" />
-                          <span className="font-medium text-gray-200">{highlight}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-
-      {/* Sponsors Section */}
-      <section className="py-20 bg-black text-white hidden">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-6xl font-black text-white mb-6 leading-tight font-heading">
-              OUR <span className="text-[#E91F28]">PARTNERS</span>
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {[
-              {
-                name: "AfCFTA Secretariat",
-                color: "bg-[#E91F28]",
-                desc: "African Continental Free Trade Area",
-              },
-              {
-                name: "Africa Tourism Partners",
-                color: "bg-[#E19D2B]",
-                desc: "Tourism & Cultural Development",
-              },
-              {
-                name: "Black Star Experience",
-                color: "bg-[#2A8E44]",
-                desc: "Cultural Events & Experiences",
-              },
-            ].map((partner, index) => (
-              <Card
-                key={index}
-                className="text-center p-8 bg-gray-900/80 border border-white/20 hover:shadow-lg transition-shadow rounded-none"
-              >
-                <CardContent className="p-0">
-                  <div
-                    className={`w-20 h-20 ${partner.color} rounded-none flex items-center justify-center mx-auto mb-4`}
-                  >
-                    <span className="text-white font-black text-xl font-heading">
-                      {partner.name
-                        .split(" ")
-                        .map((word) => word[0])
-                        .join("")}
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold mb-2 font-heading text-white">{partner.name}</h3>
-                  <p className="text-gray-300 font-medium">{partner.desc}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Newsletter Signup */}
-      <section className="py-20 bg-gradient-to-br from-black via-[#E91F28] to-black hidden">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-5xl lg:text-7xl font-black text-white mb-6 leading-tight font-heading">
-              {t.newsletter.title}
-            </h2>
-            <p className="text-xl text-gray-300 mb-12 leading-relaxed font-medium">
-              {t.newsletter.subtitle}
-            </p>
-
-            <div className="bg-white/10 rounded-none p-8 border border-white/20">
-              <form className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    placeholder={t.newsletter.firstName}
-                    className="w-full px-6 py-4 rounded-none bg-white/90 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#E19D2B] font-medium"
-                  />
-                  <input
-                    type="text"
-                    placeholder={t.newsletter.lastName}
-                    className="w-full px-6 py-4 rounded-none bg-white/90 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#E19D2B] font-medium"
-                  />
-                </div>
-                <input
-                  type="email"
-                  placeholder={t.newsletter.email}
-                  className="w-full px-6 py-4 rounded-none bg-white/90 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#E19D2B] font-medium"
-                />
-                <select className="w-full px-6 py-4 rounded-none bg-white/90 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#E19D2B] font-medium">
-                  <option>{t.newsletter.interest}</option>
-                  <option>{t.newsletter.options.professional}</option>
-                  <option>{t.newsletter.options.policymaker}</option>
-                  <option>{t.newsletter.options.investor}</option>
-                  <option>{t.newsletter.options.creative}</option>
-                  <option>{t.newsletter.options.media}</option>
-                  <option>{t.newsletter.options.partner}</option>
-                  <option>{t.newsletter.options.diaspora}</option>
-                  <option>{t.newsletter.options.other}</option>
-                </select>
-                <Button
-                  size="lg"
-                  className="w-full bg-[#E19D2B] hover:bg-[#D18A1A] text-white py-6 text-xl font-bold rounded-none transform hover:scale-105 transition-all"
-                >
-                  <Mail className="w-6 h-6 mr-3" />
-                  {t.newsletter.button}
-                </Button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      
-             {/* Media Section */}
+      {/* Media Section */}
        <section id="media" className="bg-black text-white relative overflow-hidden">
          <div className="">
 
@@ -1722,102 +999,8 @@ export default function CreativeConnectAfricaLanding() {
          </div>
        </section>
 
-
-
-      {/* Footer */}
-      <footer className="bg-black border-t border-white/10 py-12 md:py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="md:col-span-2 space-y-4 md:space-y-6">
-              <div className="flex items-center space-x-4">
-                <Image
-                  src="/logo.png"
-                  alt="Creatives Connect Afrika Logo"
-                  width={isMobile ? 140 : 180}
-                  height={isMobile ? 32 : 40}
-                  className="rounded-none"
-                />
-              </div>
-              <p className="text-gray-400 max-w-md text-base md:text-lg font-medium">
-                {t.footer.description}
-              </p>
-              <div className="text-gray-400">
-                <p className="font-medium text-sm md:text-base">
-                  {t.footer.contact}{" "}
-                  <Link
-                    href="mailto:info@creativeconnectAfrica.com"
-                    className="text-[#E19D2B] hover:text-white transition-colors font-semibold"
-                  >
-                    info@creativeconnectAfrica.com
-                  </Link>
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-lg md:text-xl font-black text-white mb-4 md:mb-6 font-heading">{t.footer.eventDetails}</h4>
-              <div className="space-y-2 md:space-y-3 text-gray-400">
-                <p className="font-bold text-[#E19D2B] text-sm md:text-base">{t.hero.date}</p>
-                <p className="font-medium text-sm md:text-base">{t.hero.location}</p>
-                                  <Badge className="bg-[#E19D2B] text-white mt-2 md:mt-4 rounded-none text-xs">{t.footer.comingSoon}</Badge>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-lg md:text-xl font-black text-white mb-4 md:mb-6 font-heading">ORGANIZING PARTNERS</h4>
-              <div className="space-y-3 md:space-y-4">
-                <div className="space-y-4 md:space-y-6">
-                  <div className="flex items-center space-x-3 md:space-x-4">
-                    <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center overflow-hidden">
-                      <Image
-                        src="https://au-afcfta.org/wp-content/uploads/2023/09/AfCFTA-Logo-1.svg"
-                        alt="AfCFTA Secretariat Logo"
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
-                    <span className="text-gray-400 font-semibold text-xs md:text-sm">AfCFTA Secretariat</span>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3 md:space-x-4">
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-none flex items-center justify-center overflow-hidden">
-                      <Image
-                        src="https://ml8qqhkhe4g3.i.optimole.com/w:auto/h:auto/q:mauto/f:best/https://africatourismpartners.com/wp-content/uploads/2020/02/ATP-1_trans_0-1.png"
-                        alt="Africa Tourism Partners Logo"
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
-                    <span className="text-gray-400 font-semibold text-xs md:text-sm">Africa Tourism Partners</span>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3 md:space-x-4">
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-none flex items-center justify-center overflow-hidden">
-                      <Image
-                        src="https://blackstarexperience.org/wp-content/uploads/2025/04/TBSE-logo-04.png"
-                        alt="Black Star Experience Logo"
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
-                    <span className="text-gray-400 font-semibold text-xs md:text-sm">Black Star Experience</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-white/10 mt-8 md:mt-12 pt-6 md:pt-8 text-center">
-            <p className="text-gray-400 font-medium text-sm md:text-base">
-              &copy; 2025 Creatives Connect Afrika. A collaboration between AfCFTA Secretariat, Africa Tourism Partners,
-              and Black Star Experience.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <div id="contact"></div>
+      <Footer language={language} />
 
       {/* Participant Registration Modal */}
       <Dialog open={participantModalOpen} onOpenChange={setParticipantModalOpen}>
