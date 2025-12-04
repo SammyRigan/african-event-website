@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Download, Search, ArrowLeft, Mail, Users, Briefcase, LayoutDashboard, Menu, X, LogOut, Mic, Handshake, Image as ImageIcon } from 'lucide-react';
+import { Download, Search, ArrowLeft, Mail, Users, Briefcase, LayoutDashboard, Menu, X, LogOut, Mic, Handshake, Image as ImageIcon, FileText, Video, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -17,6 +17,9 @@ interface AdminLayoutProps {
   partnerships: any[];
   speakers: any[];
   galleryImages: any[];
+  blogPosts?: any[];
+  videos?: any[];
+  partners?: any[];
   searchTerm: string;
   onSearchChange: (term: string) => void;
   onExport?: () => void;
@@ -32,6 +35,9 @@ export default function AdminLayout({
   partnerships,
   speakers,
   galleryImages,
+  blogPosts = [],
+  videos = [],
+  partners = [],
   searchTerm,
   onSearchChange,
   onExport,
@@ -76,6 +82,9 @@ export default function AdminLayout({
     { id: 'partnerships', label: 'Partnership Applications', icon: Handshake, count: partnerships.length, href: '/dashboard/partnerships' },
     { id: 'speakers', label: 'Speakers', icon: Mic, count: speakers.length, href: '/dashboard/speakers' },
     { id: 'gallery', label: 'Gallery', icon: ImageIcon, count: galleryImages.length, href: '/dashboard/gallery' },
+    { id: 'blogs', label: 'Blogs', icon: FileText, count: blogPosts.length, href: '/dashboard/blogs' },
+    { id: 'videos', label: 'Videos', icon: Video, count: videos.length, href: '/dashboard/videos' },
+    { id: 'partners', label: 'Partners', icon: Building2, count: partners.length, href: '/dashboard/partners' },
   ];
 
   const activeTab = navItems.find(item => pathname === item.href)?.id || 'dashboard';

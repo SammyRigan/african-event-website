@@ -35,11 +35,11 @@ This starts the admin app on port 3001.
 - `/login` - Admin login page
 - `/dashboard` - Admin dashboard (main page)
 - `/speakers/add` - Add speaker
-- `/speakers/edit/[id]` - Edit speaker
 - `/gallery/add` - Add gallery image
-- `/gallery/edit/[id]` - Edit gallery image
 - `/gallery/batch-upload` - Batch upload images
 - `/gallery/categories` - Manage categories
+
+Note: Speaker and gallery image editing are now done via centered modals from their respective dashboards, eliminating the need for dynamic routes and ensuring compatibility with static export.
 
 ## Building
 

@@ -457,3 +457,192 @@ export const deleteGalleryCategory = async (id: string) => {
     throw error;
   }
 };
+
+export interface BlogPost {
+  id?: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  date: string;
+  author: string;
+  readTime: string;
+  category: string;
+  image: string;
+  content: Array<{
+    type: string;
+    text?: string;
+    items?: string[];
+  }>;
+  order?: number;
+  isActive?: boolean;
+  timestamp?: any;
+}
+
+export const addBlogPost = async (data: Omit<BlogPost, 'id' | 'timestamp'>) => {
+  try {
+    const docRef = await addDoc(collection(db, 'blog-posts'), {
+      ...data,
+      order: data.order || 0,
+      isActive: data.isActive !== undefined ? data.isActive : true,
+      timestamp: serverTimestamp()
+    });
+    
+    console.log('Blog post added with ID: ', docRef.id);
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    console.error('Error adding blog post: ', error);
+    throw error;
+  }
+};
+
+export const updateBlogPost = async (id: string, data: Partial<BlogPost>) => {
+  try {
+    const { updateDoc, doc } = await import('firebase/firestore');
+    await updateDoc(doc(db, 'blog-posts', id), {
+      ...data,
+      timestamp: serverTimestamp()
+    });
+    
+    console.log('Blog post updated with ID: ', id);
+    return { success: true, id };
+  } catch (error) {
+    console.error('Error updating blog post: ', error);
+    throw error;
+  }
+};
+
+export const deleteBlogPost = async (id: string) => {
+  try {
+    const { deleteDoc, doc } = await import('firebase/firestore');
+    await deleteDoc(doc(db, 'blog-posts', id));
+    
+    console.log('Blog post deleted with ID: ', id);
+    return { success: true, id };
+  } catch (error) {
+    console.error('Error deleting blog post: ', error);
+    throw error;
+  }
+};
+
+export interface Video {
+  id?: string;
+  title: string;
+  titleFr: string;
+  url: string;
+  location: string;
+  locationFr: string;
+  order?: number;
+  isActive?: boolean;
+  timestamp?: any;
+}
+
+export const addVideo = async (data: Omit<Video, 'id' | 'timestamp'>) => {
+  try {
+    const docRef = await addDoc(collection(db, 'videos'), {
+      ...data,
+      order: data.order || 0,
+      isActive: data.isActive !== undefined ? data.isActive : true,
+      timestamp: serverTimestamp()
+    });
+    
+    console.log('Video added with ID: ', docRef.id);
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    console.error('Error adding video: ', error);
+    throw error;
+  }
+};
+
+export const updateVideo = async (id: string, data: Partial<Video>) => {
+  try {
+    const { updateDoc, doc } = await import('firebase/firestore');
+    await updateDoc(doc(db, 'videos', id), {
+      ...data,
+      timestamp: serverTimestamp()
+    });
+    
+    console.log('Video updated with ID: ', id);
+    return { success: true, id };
+  } catch (error) {
+    console.error('Error updating video: ', error);
+    throw error;
+  }
+};
+
+export const deleteVideo = async (id: string) => {
+  try {
+    const { deleteDoc, doc } = await import('firebase/firestore');
+    await deleteDoc(doc(db, 'videos', id));
+    
+    console.log('Video deleted with ID: ', id);
+    return { success: true, id };
+  } catch (error) {
+    console.error('Error deleting video: ', error);
+    throw error;
+  }
+};
+
+export interface Partner {
+  id?: string;
+  name: string;
+  logo: string;
+  website: string;
+  location: string;
+  description: {
+    en: string;
+    fr: string;
+  };
+  keyAreas: {
+    en: string[];
+    fr: string[];
+  };
+  order?: number;
+  isActive?: boolean;
+  timestamp?: any;
+}
+
+export const addPartner = async (data: Omit<Partner, 'id' | 'timestamp'>) => {
+  try {
+    const docRef = await addDoc(collection(db, 'partners'), {
+      ...data,
+      order: data.order || 0,
+      isActive: data.isActive !== undefined ? data.isActive : true,
+      timestamp: serverTimestamp()
+    });
+    
+    console.log('Partner added with ID: ', docRef.id);
+    return { success: true, id: docRef.id };
+  } catch (error) {
+    console.error('Error adding partner: ', error);
+    throw error;
+  }
+};
+
+export const updatePartner = async (id: string, data: Partial<Partner>) => {
+  try {
+    const { updateDoc, doc } = await import('firebase/firestore');
+    await updateDoc(doc(db, 'partners', id), {
+      ...data,
+      timestamp: serverTimestamp()
+    });
+    
+    console.log('Partner updated with ID: ', id);
+    return { success: true, id };
+  } catch (error) {
+    console.error('Error updating partner: ', error);
+    throw error;
+  }
+};
+
+export const deletePartner = async (id: string) => {
+  try {
+    const { deleteDoc, doc } = await import('firebase/firestore');
+    await deleteDoc(doc(db, 'partners', id));
+    
+    console.log('Partner deleted with ID: ', id);
+    return { success: true, id };
+  } catch (error) {
+    console.error('Error deleting partner: ', error);
+    throw error;
+  }
+};

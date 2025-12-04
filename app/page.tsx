@@ -541,22 +541,6 @@ export default function CreativeConnectAfricaLanding() {
               <p className="text-lg sm:text-xl md:text-2xl font-bold text-gray-200 mb-3 font-heading max-w-2xl mx-auto">{t.hero.subtitle}</p>
             </div>
 
-            <div className="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-6 max-w-3xl mx-auto mb-3 md:mb-4">
-              <div className="flex items-center gap-3 text-white">
-                <div>
-                  <p className="text-lg md:text-xl font-bold font-heading">{t.hero.date}</p>
-                </div>
-              </div>
-              <div className="hidden md:block w-1 h-7 bg-white"></div>
-              <div className="flex items-center gap-3 text-white">
-                <div>
-                  <p className="text-lg md:text-xl font-bold font-heading">{t.hero.location}</p>
-                </div>
-              </div>
-            </div>
-
-
-
             {/* Social Media */}
             {/* Social Media - Desktop Only */}
             <div className="hidden md:flex justify-center space-x-6 mb-8">
@@ -645,17 +629,6 @@ export default function CreativeConnectAfricaLanding() {
         {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
           <ChevronDown className="w-8 h-8 text-white" />
-        </div>
-      </section>
-
-      {/* Happening Now Section */}
-      <section className="py-8 md:py-12 bg-black text-white relative">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-6 md:mb-8">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-black mb-3 leading-tight font-heading">{t.countdown.title}</h2>
-            <p className="text-lg md:text-xl text-[#E19D2B] font-bold mb-2">{t.countdown.happeningNow}</p>
-            <p className="text-lg md:text-xl text-gray-300 font-medium">{t.countdown.dateLocation}</p>
-          </div>
         </div>
       </section>
 

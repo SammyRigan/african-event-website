@@ -18,7 +18,7 @@ import { db } from '@/lib/firebase'
 import { collection, getDocs, query, where, orderBy } from 'firebase/firestore'
 import { Speaker } from '@/lib/firebaseService'
 
-const initialSpeakers = [
+export const initialSpeakers = [
   {
     id: 'initial-president-ghana',
     name: "H.E. John Dramani Mahama",

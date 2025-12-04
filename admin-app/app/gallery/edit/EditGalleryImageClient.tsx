@@ -16,9 +16,11 @@ import { doc, getDoc, collection, getDocs, query, orderBy } from 'firebase/fires
 
 interface EditGalleryImageClientProps {
   imageId: string;
+  onClose?: () => void;
+  onSuccess?: () => void;
 }
 
-export default function EditGalleryImageClient({ imageId }: EditGalleryImageClientProps) {
+export default function EditGalleryImageClient({ imageId, onClose, onSuccess }: EditGalleryImageClientProps) {
   const router = useRouter();
   
   const [loading, setLoading] = useState(false);
@@ -41,12 +43,16 @@ export default function EditGalleryImageClient({ imageId }: EditGalleryImageClie
   useEffect(() => {
     const authToken = sessionStorage.getItem('cca_admin_auth');
     if (!authToken) {
-      router.push('/login');
+      if (onClose) {
+        onClose();
+      } else {
+        router.push('/login');
+      }
       return;
     }
     setIsAuthenticated(true);
     fetchCategories();
-  }, [router]);
+  }, [router, onClose]);
 
   const fetchCategories = async () => {
     try {
@@ -158,7 +164,11 @@ export default function EditGalleryImageClient({ imageId }: EditGalleryImageClie
 
       await updateGalleryImage(imageId, galleryImageData);
       alert('Gallery image updated successfully!');
-      router.push('/dashboard');
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.push('/dashboard');
+      }
     } catch (error) {
       console.error('Error updating gallery image:', error);
       alert('Failed to update gallery image. Please try again.');
@@ -179,16 +189,18 @@ export default function EditGalleryImageClient({ imageId }: EditGalleryImageClie
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+    <div className="bg-gray-50 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-6">
-          <Link href="/dashboard">
-            <Button variant="outline">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
-        </div>
+        {!onClose && (
+          <div className="mb-6">
+            <Link href="/dashboard">
+              <Button variant="outline">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Dashboard
+              </Button>
+            </Link>
+          </div>
+        )}
 
         <Card>
           <CardHeader>
@@ -355,11 +367,22 @@ export default function EditGalleryImageClient({ imageId }: EditGalleryImageClie
 
               {/* Submit Buttons */}
               <div className="flex gap-4 pt-6 border-t">
-                <Link href="/admin" className="flex-1">
-                  <Button type="button" variant="outline" className="w-full">
+                {onClose ? (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="flex-1 w-full"
+                    onClick={onClose}
+                  >
                     Cancel
                   </Button>
-                </Link>
+                ) : (
+                  <Link href="/admin" className="flex-1">
+                    <Button type="button" variant="outline" className="w-full">
+                      Cancel
+                    </Button>
+                  </Link>
+                )}
                 <Button
                   type="submit"
                   disabled={loading || uploading}

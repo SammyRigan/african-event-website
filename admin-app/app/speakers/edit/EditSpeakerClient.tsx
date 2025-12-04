@@ -17,9 +17,11 @@ import { doc, getDoc } from 'firebase/firestore';
 
 interface EditSpeakerClientProps {
   speakerId: string;
+  onClose?: () => void;
+  onSuccess?: () => void;
 }
 
-export default function EditSpeakerClient({ speakerId }: EditSpeakerClientProps) {
+export default function EditSpeakerClient({ speakerId, onClose, onSuccess }: EditSpeakerClientProps) {
   const router = useRouter();
   
   const [loading, setLoading] = useState(false);
@@ -56,11 +58,15 @@ export default function EditSpeakerClient({ speakerId }: EditSpeakerClientProps)
   useEffect(() => {
     const authToken = sessionStorage.getItem('cca_admin_auth');
     if (!authToken) {
-      router.push('/login');
+      if (onClose) {
+        onClose();
+      } else {
+        router.push('/login');
+      }
       return;
     }
     setIsAuthenticated(true);
-  }, [router]);
+  }, [router, onClose]);
 
   useEffect(() => {
     const fetchSpeaker = async () => {
@@ -97,7 +103,11 @@ export default function EditSpeakerClient({ speakerId }: EditSpeakerClientProps)
           });
         } else {
           alert('Speaker not found');
-          router.push('/dashboard');
+          if (onClose) {
+            onClose();
+          } else {
+            router.push('/dashboard');
+          }
         }
       } catch (error) {
         console.error('Error fetching speaker:', error);
@@ -185,7 +195,11 @@ export default function EditSpeakerClient({ speakerId }: EditSpeakerClientProps)
 
       await updateSpeaker(speakerId, speakerData);
       alert('Speaker updated successfully!');
-      router.push('/dashboard');
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.push('/dashboard');
+      }
     } catch (error) {
       console.error('Error updating speaker:', error);
       alert('Failed to update speaker. Please try again.');
@@ -210,16 +224,18 @@ export default function EditSpeakerClient({ speakerId }: EditSpeakerClientProps)
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+    <div className="bg-gray-50 p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-6">
-                <Link href="/dashboard">
-            <Button variant="outline">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
-        </div>
+        {!onClose && (
+          <div className="mb-6">
+            <Link href="/dashboard">
+              <Button variant="outline">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Dashboard
+              </Button>
+            </Link>
+          </div>
+        )}
 
         <Card>
           <CardHeader>
@@ -566,11 +582,22 @@ export default function EditSpeakerClient({ speakerId }: EditSpeakerClientProps)
 
               {/* Submit Buttons */}
               <div className="flex gap-4 pt-6 border-t">
-                <Link href="/admin" className="flex-1">
-                  <Button type="button" variant="outline" className="w-full">
+                {onClose ? (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="flex-1 w-full"
+                    onClick={onClose}
+                  >
                     Cancel
                   </Button>
-                </Link>
+                ) : (
+                  <Link href="/admin" className="flex-1">
+                    <Button type="button" variant="outline" className="w-full">
+                      Cancel
+                    </Button>
+                  </Link>
+                )}
                 <Button
                   type="submit"
                   disabled={loading || uploading}

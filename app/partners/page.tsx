@@ -6,15 +6,83 @@ import { Card, CardContent } from "@/components/ui/card"
 import { MapPin, Calendar, Award, Globe, Briefcase, GraduationCap, Star, Users, Building2, ExternalLink } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useLanguage } from "@/contexts/LanguageContext"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import PartnershipModal from "@/components/PartnershipModal"
+import { db } from "@/lib/firebase"
+import { collection, getDocs, query, orderBy } from "firebase/firestore"
+
+// Export partners array for use in admin upload page
+export const partners = [
+  {
+    name: "AfCFTA Secretariat",
+    logo: "https://au-afcfta.org/wp-content/uploads/2023/09/AfCFTA-Logo-1.svg",
+    website: "https://au-afcfta.org",
+    location: "Accra, Ghana",
+    description: {
+      en: "The African Continental Free Trade Area (AfCFTA) Secretariat, headquartered in Accra, Ghana, is the administrative and technical body responsible for coordinating the implementation of the AfCFTA Agreement. The AfCFTA is the largest free trade area in the world by membership, bringing together 55 African Union member states with a combined GDP of over $3 trillion and a market of 1.4 billion people. The Secretariat drives policies, negotiations, and frameworks that remove barriers to intra-African trade, harmonise regulations, and create opportunities for businesses and creatives to scale across the continent. By promoting industrialisation, services, and investment, the AfCFTA is shaping Africa into a single market and positioning the creative industries as a driver of growth, jobs, and cultural exchange.",
+      fr: "Le Secrétariat de la Zone de Libre-Échange Continentale Africaine (ZLECAf), basé à Accra, au Ghana, est l'organe administratif et technique responsable de la coordination de la mise en œuvre de l'Accord ZLECAf. La ZLECAf est la plus grande zone de libre-échange au monde par le nombre de membres, réunissant 55 États membres de l'Union africaine avec un PIB combiné de plus de 3 000 milliards de dollars et un marché de 1,4 milliard de personnes. Le Secrétariat pilote les politiques, négociations et cadres qui éliminent les obstacles au commerce intra-africain, harmonisent les réglementations et créent des opportunités pour les entreprises et les créatifs de se développer sur le continent. En promouvant l'industrialisation, les services et l'investissement, la ZLECAf façonne l'Afrique en un marché unique et positionne les industries créatives comme un moteur de croissance, d'emplois et d'échanges culturels."
+    },
+    keyAreas: {
+      en: ["Free Trade Area Coordination", "Policy Development", "Trade Negotiations", "Regulatory Harmonization", "Creative Industries Support"],
+      fr: ["Coordination de la Zone de Libre-Échange", "Développement des Politiques", "Négociations Commerciales", "Harmonisation Réglementaire", "Soutien aux Industries Créatives"]
+    }
+  },
+  {
+    name: "Black Star Experience Secretariat",
+    logo: "https://blackstarexperience.org/wp-content/uploads/2025/04/TBSE-logo-01-1024x969.png",
+    website: "https://blackstarexperience.org",
+    location: "Accra, Ghana",
+    description: {
+      en: "The Black Star Experience Secretariat is a pioneering platform designed to harness the global power of the African diaspora by connecting them to cultural, creative, and economic opportunities in Ghana and across Africa. Based in Accra, the Secretariat builds on the momentum of landmark initiatives such as the Year of Return and Beyond the Return, offering structured programmes that promote diaspora tourism, creative exchanges, and investment partnerships. Through curated experiences, cultural festivals, heritage trails, and business forums, the Black Star Experience Secretariat acts as a bridge between Africa and its global diaspora. Its mission is to deepen connections, foster innovation in the creative sector, and amplify Africa's place as a home for culture, creativity, and commerce.",
+      fr: "Le Secrétariat de l'Expérience Black Star est une plateforme pionnière conçue pour exploiter la puissance mondiale de la diaspora africaine en la connectant aux opportunités culturelles, créatives et économiques au Ghana et à travers l'Afrique. Basé à Accra, le Secrétariat s'appuie sur l'élan d'initiatives historiques telles que l'Année du Retour et Au-delà du Retour, offrant des programmes structurés qui promeuvent le tourisme de la diaspora, les échanges créatifs et les partenariats d'investissement. À travers des expériences organisées, des festivals culturels, des parcours patrimoniaux et des forums d'affaires, le Secrétariat de l'Expérience Black Star agit comme un pont entre l'Afrique et sa diaspora mondiale. Sa mission est d'approfondir les connexions, favoriser l'innovation dans le secteur créatif et amplifier la place de l'Afrique comme foyer de culture, de créativité et de commerce."
+    },
+    keyAreas: {
+      en: ["Diaspora Tourism", "Cultural Exchanges", "Heritage Preservation", "Creative Partnerships", "Investment Facilitation"],
+      fr: ["Tourisme de la Diaspora", "Échanges Culturels", "Préservation du Patrimoine", "Partenariats Créatifs", "Facilitation des Investissements"]
+    }
+  },
+  {
+    name: "Africa Tourism Partners (ATP)",
+    logo: "/ATP.png",
+    website: "https://africatourismpartners.com",
+    location: "Johannesburg, South Africa",
+    description: {
+      en: "Africa Tourism Partners (ATP) is a Pan-African tourism advisory, strategy, and investment facilitation firm headquartered in Johannesburg, South Africa. ATP specialises in tourism development, destination marketing, MICE (Meetings, Incentives, Conferences, and Exhibitions), and training programmes for governments, private sector, and tourism boards across the continent. Widely recognised for convening the annual Africa Tourism Leadership Forum (ATLF) and Awards, ATP creates platforms for thought leadership, policy dialogue, and business networking within Africa's tourism and creative industries. Its work empowers destinations and brands to leverage Africa's unique cultural and natural assets, enhance competitiveness, and foster inclusive growth.",
+      fr: "Africa Tourism Partners (ATP) est une firme panafricaine de conseil en tourisme, de stratégie et de facilitation des investissements basée à Johannesburg, en Afrique du Sud. ATP se spécialise dans le développement du tourisme, le marketing des destinations, les MICE (Réunions, Incitations, Conférences et Expositions) et les programmes de formation pour les gouvernements, le secteur privé et les offices de tourisme à travers le continent. Reconnue pour organiser le Forum de Leadership du Tourisme Africain (ATLF) et les Prix annuels, ATP crée des plateformes pour le leadership intellectuel, le dialogue politique et le réseautage commercial dans les industries du tourisme et créatives africaines. Son travail permet aux destinations et aux marques d'exploiter les atouts culturels et naturels uniques de l'Afrique, d'améliorer la compétitivité et de favoriser une croissance inclusive."
+    },
+    keyAreas: {
+      en: ["Tourism Development", "Destination Marketing", "MICE Services", "Training Programs", "Investment Facilitation"],
+      fr: ["Développement du Tourisme", "Marketing des Destinations", "Services MICE", "Programmes de Formation", "Facilitation des Investissements"]
+    }
+  }
+];
+
+interface PartnerItem {
+  id: string;
+  name: string;
+  logo: string;
+  website: string;
+  location: string;
+  description: {
+    en: string;
+    fr: string;
+  };
+  keyAreas: {
+    en: string[];
+    fr: string[];
+  };
+  order?: number;
+  isActive?: boolean;
+}
 
 export default function PartnersPage() {
   const { language, setLanguage } = useLanguage();
   const [partnershipModalOpen, setPartnershipModalOpen] = useState(false);
+  const [partners, setPartners] = useState<PartnerItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const translations = {
     en: {
@@ -85,50 +153,32 @@ export default function PartnersPage() {
 
   const t = translations[language];
 
-  const partners = [
-    {
-      name: "AfCFTA Secretariat",
-      logo: "https://au-afcfta.org/wp-content/uploads/2023/09/AfCFTA-Logo-1.svg",
-      website: "https://au-afcfta.org",
-      location: "Accra, Ghana",
-      description: {
-        en: "The African Continental Free Trade Area (AfCFTA) Secretariat, headquartered in Accra, Ghana, is the administrative and technical body responsible for coordinating the implementation of the AfCFTA Agreement. The AfCFTA is the largest free trade area in the world by membership, bringing together 55 African Union member states with a combined GDP of over $3 trillion and a market of 1.4 billion people. The Secretariat drives policies, negotiations, and frameworks that remove barriers to intra-African trade, harmonise regulations, and create opportunities for businesses and creatives to scale across the continent. By promoting industrialisation, services, and investment, the AfCFTA is shaping Africa into a single market and positioning the creative industries as a driver of growth, jobs, and cultural exchange.",
-        fr: "Le Secrétariat de la Zone de Libre-Échange Continentale Africaine (ZLECAf), basé à Accra, au Ghana, est l'organe administratif et technique responsable de la coordination de la mise en œuvre de l'Accord ZLECAf. La ZLECAf est la plus grande zone de libre-échange au monde par le nombre de membres, réunissant 55 États membres de l'Union africaine avec un PIB combiné de plus de 3 000 milliards de dollars et un marché de 1,4 milliard de personnes. Le Secrétariat pilote les politiques, négociations et cadres qui éliminent les obstacles au commerce intra-africain, harmonisent les réglementations et créent des opportunités pour les entreprises et les créatifs de se développer sur le continent. En promouvant l'industrialisation, les services et l'investissement, la ZLECAf façonne l'Afrique en un marché unique et positionne les industries créatives comme un moteur de croissance, d'emplois et d'échanges culturels."
-      },
-      keyAreas: {
-        en: ["Free Trade Area Coordination", "Policy Development", "Trade Negotiations", "Regulatory Harmonization", "Creative Industries Support"],
-        fr: ["Coordination de la Zone de Libre-Échange", "Développement des Politiques", "Négociations Commerciales", "Harmonisation Réglementaire", "Soutien aux Industries Créatives"]
-      }
-    },
-    {
-      name: "Black Star Experience Secretariat",
-      logo: "https://blackstarexperience.org/wp-content/uploads/2025/04/TBSE-logo-01-1024x969.png",
-      website: "https://blackstarexperience.org",
-      location: "Accra, Ghana",
-      description: {
-        en: "The Black Star Experience Secretariat is a pioneering platform designed to harness the global power of the African diaspora by connecting them to cultural, creative, and economic opportunities in Ghana and across Africa. Based in Accra, the Secretariat builds on the momentum of landmark initiatives such as the Year of Return and Beyond the Return, offering structured programmes that promote diaspora tourism, creative exchanges, and investment partnerships. Through curated experiences, cultural festivals, heritage trails, and business forums, the Black Star Experience Secretariat acts as a bridge between Africa and its global diaspora. Its mission is to deepen connections, foster innovation in the creative sector, and amplify Africa's place as a home for culture, creativity, and commerce.",
-        fr: "Le Secrétariat de l'Expérience Black Star est une plateforme pionnière conçue pour exploiter la puissance mondiale de la diaspora africaine en la connectant aux opportunités culturelles, créatives et économiques au Ghana et à travers l'Afrique. Basé à Accra, le Secrétariat s'appuie sur l'élan d'initiatives historiques telles que l'Année du Retour et Au-delà du Retour, offrant des programmes structurés qui promeuvent le tourisme de la diaspora, les échanges créatifs et les partenariats d'investissement. À travers des expériences organisées, des festivals culturels, des parcours patrimoniaux et des forums d'affaires, le Secrétariat de l'Expérience Black Star agit comme un pont entre l'Afrique et sa diaspora mondiale. Sa mission est d'approfondir les connexions, favoriser l'innovation dans le secteur créatif et amplifier la place de l'Afrique comme foyer de culture, de créativité et de commerce."
-      },
-      keyAreas: {
-        en: ["Diaspora Tourism", "Cultural Exchanges", "Heritage Preservation", "Creative Partnerships", "Investment Facilitation"],
-        fr: ["Tourisme de la Diaspora", "Échanges Culturels", "Préservation du Patrimoine", "Partenariats Créatifs", "Facilitation des Investissements"]
-      }
-    },
-    {
-      name: "Africa Tourism Partners (ATP)",
-      logo: "/ATP.png",
-      website: "https://africatourismpartners.com",
-      location: "Johannesburg, South Africa",
-      description: {
-        en: "Africa Tourism Partners (ATP) is a Pan-African tourism advisory, strategy, and investment facilitation firm headquartered in Johannesburg, South Africa. ATP specialises in tourism development, destination marketing, MICE (Meetings, Incentives, Conferences, and Exhibitions), and training programmes for governments, private sector, and tourism boards across the continent. Widely recognised for convening the annual Africa Tourism Leadership Forum (ATLF) and Awards, ATP creates platforms for thought leadership, policy dialogue, and business networking within Africa's tourism and creative industries. Its work empowers destinations and brands to leverage Africa's unique cultural and natural assets, enhance competitiveness, and foster inclusive growth.",
-        fr: "Africa Tourism Partners (ATP) est une firme panafricaine de conseil en tourisme, de stratégie et de facilitation des investissements basée à Johannesburg, en Afrique du Sud. ATP se spécialise dans le développement du tourisme, le marketing des destinations, les MICE (Réunions, Incitations, Conférences et Expositions) et les programmes de formation pour les gouvernements, le secteur privé et les offices de tourisme à travers le continent. Reconnue pour organiser le Forum de Leadership du Tourisme Africain (ATLF) et les Prix annuels, ATP crée des plateformes pour le leadership intellectuel, le dialogue politique et le réseautage commercial dans les industries du tourisme et créatives africaines. Son travail permet aux destinations et aux marques d'exploiter les atouts culturels et naturels uniques de l'Afrique, d'améliorer la compétitivité et de favoriser une croissance inclusive."
-      },
-      keyAreas: {
-        en: ["Tourism Development", "Destination Marketing", "MICE Services", "Training Programs", "Investment Facilitation"],
-        fr: ["Développement du Tourisme", "Marketing des Destinations", "Services MICE", "Programmes de Formation", "Facilitation des Investissements"]
+  // Fetch partners from Firebase
+  useEffect(() => {
+    const fetchPartners = async () => {
+      try {
+        const partnersQuery = query(
+          collection(db, 'partners'),
+          orderBy('order', 'asc')
+        )
+        const partnersSnapshot = await getDocs(partnersQuery)
+        const partnersData = partnersSnapshot.docs
+          .map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          } as PartnerItem))
+          .filter(partner => partner.isActive !== false && partner.name && partner.logo && partner.website) // Only include active partners with required fields
+        
+        setPartners(partnersData)
+      } catch (error) {
+        console.error('Error fetching partners:', error)
+      } finally {
+        setLoading(false)
       }
     }
-  ];
+
+    fetchPartners()
+  }, [])
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -164,9 +214,19 @@ export default function PartnersPage() {
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-1 lg:grid-cols-1 gap-12 max-w-6xl mx-auto ">
-                {partners.map((partner, index) => (
-                  <Card key={index} className="bg-black border-none rounded-none overflow-hidden">
+              {loading ? (
+                <div className="text-center py-20">
+                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#E19D2B] mx-auto mb-4"></div>
+                  <p className="text-gray-400">Loading partners...</p>
+                </div>
+              ) : partners.length === 0 ? (
+                <div className="text-center py-20">
+                  <p className="text-gray-400 text-lg mb-4">No partners available at the moment.</p>
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-1 lg:grid-cols-1 gap-12 max-w-6xl mx-auto ">
+                  {partners.map((partner) => (
+                    <Card key={partner.id} className="bg-black border-none rounded-none overflow-hidden">
                     <CardContent className="p-8">
                       <div className="grid md:grid-cols-3 gap-8 items-start">
                         {/* Logo and Basic Info */}
@@ -222,9 +282,10 @@ export default function PartnersPage() {
                         </div>
                       </div>
                     </CardContent>
-                  </Card>
-                ))}
-              </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
 

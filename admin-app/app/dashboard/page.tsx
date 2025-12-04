@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Download, Search, RefreshCw, ArrowLeft, Mail, Users, Briefcase, LayoutDashboard, Menu, X, LogOut, Mic, Plus, Edit, Trash2, Handshake, Image as ImageIcon, Upload } from 'lucide-react';
+import { Download, Search, RefreshCw, ArrowLeft, Mail, Users, Briefcase, LayoutDashboard, Menu, X, LogOut, Mic, Plus, Edit, Trash2, Handshake, Image as ImageIcon, Upload, FileText, Video, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -313,6 +313,9 @@ export default function AdminPage() {
     { id: 'partnerships', label: 'Partnership Applications', icon: Handshake, count: partnerships.length, href: '/dashboard/partnerships' },
     { id: 'speakers', label: 'Speakers', icon: Mic, count: speakers.length, href: '/dashboard/speakers' },
     { id: 'gallery', label: 'Gallery', icon: ImageIcon, count: galleryImages.length, href: '/dashboard/gallery' },
+    { id: 'blogs', label: 'Blogs', icon: FileText, count: 0, href: '/dashboard/blogs' },
+    { id: 'videos', label: 'Videos', icon: Video, count: 0, href: '/dashboard/videos' },
+    { id: 'partners', label: 'Partners', icon: Building2, count: 0, href: '/dashboard/partners' },
   ];
 
   // Determine active tab from pathname

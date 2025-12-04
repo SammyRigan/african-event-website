@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 import BlogPostClient from "@/components/BlogPostClient"
 
 // Blog post data
-const blogPosts = [
+export const blogPosts = [
   {
     id: "nairobi-to-accra",
     slug: "nairobi-to-accra-mkte-sets-stage",
